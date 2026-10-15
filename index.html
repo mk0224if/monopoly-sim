@@ -381,7 +381,7 @@
             white-space: nowrap;
         }
 
-        /* 訪問確率推移セクションのスタイル */
+        /* 訪問確率推移セクション＆タブのスタイル */
         .history-box {
             margin-top: 20px;
             background: #f8f9fa;
@@ -390,15 +390,37 @@
             border-radius: 8px;
         }
 
-        .history-box h4 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #2c3e50;
+        .tab-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 4px;
+            gap: 6px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 6px;
+        }
+
+        .tab-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #3182ce;
+            color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .history-canvas-box {
@@ -697,7 +719,11 @@ const communityCardsInfo = [
 
 // 計算・状態変数
 let visitCounts = new Array(40).fill(0);
+// 全体進行度ログ [40マス][10ステップ]
 let visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
+// 初期100ターンログ [40マス][10ステップ (10/20/.../100ターン)]
+let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
+
 let currentTurns = 0;
 let targetTurns = 1000000;
 let selectedStrategy = "EARLY_EXIT";
@@ -847,7 +873,15 @@ function stepTurn() {
 
     currentTurns++;
 
-    // 10分割スナップショットの記録
+    // 初期100ターンのスナップショット (10, 20, ..., 100ターン目)
+    if (currentTurns <= 100 && currentTurns % 10 === 0) {
+        let earlyIdx = (currentTurns / 10) - 1;
+        for (let i = 0; i < 40; i++) {
+            earlyHistory[i][earlyIdx] = visitCounts[i];
+        }
+    }
+
+    // 全体進行度の10分割スナップショット
     let stepInterval = targetTurns / 10;
     if (currentTurns % stepInterval === 0 || currentTurns === targetTurns) {
         let stepIdx = Math.min(9, Math.floor((currentTurns - 1) / stepInterval));
@@ -887,6 +921,7 @@ function startSimulation() {
     // リセット
     visitCounts.fill(0);
     visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
+    earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
     currentTurns = 0;
     pos = 0;
     doubleCount = 0;
@@ -921,6 +956,20 @@ function toggleSort() {
     let btn = document.getElementById("sortBtn");
     btn.innerText = isSortedByProb ? "元の順番（ID順）に戻す" : "着地確率が高い順に並び替え";
     updateUI();
+}
+
+// モーダル内タブ切り替え処理
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    if (tabName === 'total') {
+        document.getElementById('btnTabTotal').classList.add('active');
+        document.getElementById('tabTotal').classList.add('active');
+    } else {
+        document.getElementById('btnTabEarly').classList.add('active');
+        document.getElementById('tabEarly').classList.add('active');
+    }
 }
 
 // モーダルポップアップ処理
@@ -998,37 +1047,59 @@ function showDetail(id) {
         html += `<p style="line-height: 1.6; font-size: 13px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc}</p>`;
     }
 
-    // --- リアルタイム確率推移スパークライン ---
-    let countsArr = visitHistory[item.id];
+    // --- 全体進行 vs 初期100ターン 確率推移タブ ---
+    let totalCountsArr = visitHistory[item.id];
     let stepInterval = targetTurns / 10;
-    
-    let probArr = countsArr.map((cnt, i) => {
+    let totalProbArr = totalCountsArr.map((cnt, i) => {
         let turnsAtStep = stepInterval * (i + 1);
         return currentTurns > 0 ? (cnt / turnsAtStep) * 100 : 0;
     });
 
-    let initProb = probArr[0] || 0;
-    let finalProb = probArr[9] || (currentTurns > 0 ? (visitCounts[item.id] / currentTurns * 100) : 0);
-    let diffProb = finalProb - initProb;
+    let earlyCountsArr = earlyHistory[item.id];
+    let earlyProbArr = earlyCountsArr.map((cnt, i) => {
+        let turnsAtStep = (i + 1) * 10;
+        return (cnt / turnsAtStep) * 100;
+    });
+
+    let finalTotalProb = totalProbArr[9] || (currentTurns > 0 ? (visitCounts[item.id] / currentTurns * 100) : 0);
+    let early100Prob = earlyProbArr[9] || 0;
 
     html += `
         <div class="history-box">
-            <h4>
-                <span>確率推移と収束プロセス</span>
-                <span style="font-size: 12px; color: #3498db; font-weight: bold;">確定確率: ${finalProb.toFixed(3)}%</span>
-            </h4>
-            <div class="history-canvas-box">
-                <canvas id="sparklineCanvas" width="500" height="150"></canvas>
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="btnTabTotal" onclick="switchTab('total')">全体進行（収束プロセス）</button>
+                <button class="tab-btn" id="btnTabEarly" onclick="switchTab('early')">初期100ターン（序盤遷移）</button>
             </div>
-            <div class="history-insight">
-                <div class="insight-item">
-                    序盤 (10%時点): <strong>${initProb.toFixed(3)}%</strong>
+
+            <!-- タブ1: 全体進行度 -->
+            <div class="tab-content active" id="tabTotal">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 13px; font-weight: bold; color: #2c3e50;">長期目標ターンへの確率収束過程</span>
+                    <span style="font-size: 12px; color: #3498db; font-weight: bold;">確定確率: ${finalTotalProb.toFixed(3)}%</span>
                 </div>
-                <div class="insight-item">
-                    最終確定 (100%): <strong>${finalProb.toFixed(3)}%</strong>
+                <div class="history-canvas-box">
+                    <canvas id="sparklineTotalCanvas" width="500" height="150"></canvas>
                 </div>
-                <div class="insight-item">
-                    ブレ幅: <strong>${diffProb >= 0 ? '+' : ''}${diffProb.toFixed(3)}%</strong>
+                <div class="history-insight">
+                    <div class="insight-item">序盤(10%時点): <strong>${totalProbArr[0].toFixed(3)}%</strong></div>
+                    <div class="insight-item">最終確定(100%): <strong>${finalTotalProb.toFixed(3)}%</strong></div>
+                    <div class="insight-item">収束ブレ幅: <strong>${(finalTotalProb - totalProbArr[0]) >= 0 ? '+' : ''}${(finalTotalProb - totalProbArr[0]).toFixed(3)}%</strong></div>
+                </div>
+            </div>
+
+            <!-- タブ2: 初期100ターン -->
+            <div class="tab-content" id="tabEarly">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 13px; font-weight: bold; color: #2c3e50;">ゲーム開始1〜100ターンの動的変化</span>
+                    <span style="font-size: 12px; color: #e67e22; font-weight: bold;">100ターン目確率: ${early100Prob.toFixed(2)}%</span>
+                </div>
+                <div class="history-canvas-box">
+                    <canvas id="sparklineEarlyCanvas" width="500" height="150"></canvas>
+                </div>
+                <div class="history-insight">
+                    <div class="insight-item">10ターン目: <strong>${earlyProbArr[0].toFixed(2)}%</strong></div>
+                    <div class="insight-item">50ターン目: <strong>${earlyProbArr[4].toFixed(2)}%</strong></div>
+                    <div class="insight-item">100ターン目: <strong>${early100Prob.toFixed(2)}%</strong></div>
                 </div>
             </div>
         </div>
@@ -1037,12 +1108,15 @@ function showDetail(id) {
     document.getElementById("modalContent").innerHTML = html;
     document.getElementById("detailModal").classList.add("active");
 
-    setTimeout(() => drawSparkline(probArr), 50);
+    setTimeout(() => {
+        drawSparkline("sparklineTotalCanvas", totalProbArr, ["10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"], "#3182ce");
+        drawSparkline("sparklineEarlyCanvas", earlyProbArr, ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100T"], "#dd6b20");
+    }, 50);
 }
 
-// モーダル内ミニ折れ線グラフ描画処理
-function drawSparkline(probArr) {
-    const canvas = document.getElementById("sparklineCanvas");
+// 汎用スパークライン折れ線グラフ描画関数
+function drawSparkline(canvasId, probArr, labels, lineColor) {
+    const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
@@ -1076,9 +1150,9 @@ function drawSparkline(probArr) {
         ctx.fillText(val.toFixed(2) + "%", pad.left - 6, y + 3);
     }
 
-    // 平均線
+    // 平均線 (2.5%)
     if (2.5 >= yMin && 2.5 <= yMax) {
-        let avgY = pad.top + chartH - ((2.5 - yMin) / (yMax - yMin)) * chartH;
+        let avgY = pad.top + chartH - ((2.5 - yMin) / (yMax - yMin || 1)) * chartH;
         ctx.strokeStyle = "#e53e3e";
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
@@ -1095,16 +1169,16 @@ function drawSparkline(probArr) {
     }
 
     // X軸ラベル
-    probArr.forEach((_, i) => {
+    labels.forEach((lbl, i) => {
         let x = pad.left + i * (chartW / 9);
         ctx.fillStyle = "#718096";
         ctx.font = "9px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`${(i + 1) * 10}%`, x, h - 8);
+        ctx.fillText(lbl, x, h - 8);
     });
 
     // 折れ線
-    ctx.strokeStyle = "#3182ce";
+    ctx.strokeStyle = lineColor;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
 
@@ -1124,7 +1198,7 @@ function drawSparkline(probArr) {
         let ratio = (val - yMin) / (yMax - yMin || 1);
         let y = pad.top + chartH - ratio * chartH;
 
-        ctx.fillStyle = "#3182ce";
+        ctx.fillStyle = lineColor;
         ctx.beginPath();
         ctx.arc(x, y, 3.5, 0, Math.PI * 2);
         ctx.fill();
@@ -1186,7 +1260,6 @@ function updateUI() {
         tbody.appendChild(tr);
     });
 
-    // 画面幅によるグラフ切り替え（768px以下は2行表示）
     const isMobile = window.innerWidth <= 768;
     const singleWrapper = document.getElementById("singleChartWrapper");
     const splitWrapper = document.getElementById("splitChartWrapper");
