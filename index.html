@@ -30,6 +30,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
         }
 
         h1 {
@@ -55,6 +56,7 @@
             border: 1px solid var(--border-color);
             padding: 24px;
             border-radius: 8px;
+            box-sizing: border-box;
         }
 
         .form-group {
@@ -125,6 +127,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .btn-back:hover {
@@ -159,7 +162,7 @@
             color: #222;
         }
 
-        /* グラフ */
+        /* グラフボックス */
         .chart-box {
             width: 100%;
             border: 1px solid var(--border-color);
@@ -169,9 +172,23 @@
             box-sizing: border-box;
         }
 
+        .chart-wrapper {
+            width: 100%;
+        }
+
+        .chart-section-title {
+            display: none;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            margin: 6px 0 2px 4px;
+        }
+
         canvas {
             display: block;
             margin: 0 auto;
+            max-width: 100%;
+            height: auto;
         }
 
         /* テーブルツールバー */
@@ -181,6 +198,7 @@
             align-items: center;
             margin-top: 24px;
             margin-bottom: 12px;
+            gap: 10px;
         }
 
         .table-title {
@@ -198,6 +216,7 @@
             font-size: 13px;
             cursor: pointer;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .btn-sort:hover {
@@ -208,6 +227,7 @@
         .table-box {
             max-height: 500px;
             overflow-y: auto;
+            overflow-x: auto;
             border: 1px solid var(--border-color);
             border-radius: 6px;
         }
@@ -217,6 +237,7 @@
             border-collapse: collapse;
             font-size: 13px;
             text-align: left;
+            min-width: 500px;
         }
 
         th, td {
@@ -253,6 +274,7 @@
             font-size: 11px;
             color: #fff;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .bg-brown { background-color: #8B4513; }
@@ -287,23 +309,24 @@
 
         .modal-card {
             background: #fff;
-            width: 90%;
+            width: 92%;
             max-width: 620px;
             max-height: 88vh;
             border-radius: 10px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             overflow-y: auto;
             position: relative;
+            box-sizing: border-box;
         }
 
         .modal-close {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 14px;
+            right: 14px;
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             color: #888;
             cursor: pointer;
@@ -355,6 +378,7 @@
             padding: 2px 6px;
             border-radius: 3px;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         /* 訪問確率推移セクションのスタイル */
@@ -362,44 +386,93 @@
             margin-top: 20px;
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
-            padding: 16px;
+            padding: 14px;
             border-radius: 8px;
         }
 
         .history-box h4 {
-            margin: 0 0 12px 0;
-            font-size: 15px;
+            margin: 0 0 10px 0;
+            font-size: 14px;
             color: #2c3e50;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .history-canvas-box {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 12px;
+            padding: 6px;
+            margin-bottom: 10px;
         }
 
         .history-insight {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             background: #edf2f7;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             color: #4a5568;
+            flex-wrap: wrap;
         }
 
         .insight-item {
             flex: 1;
+            min-width: 110px;
         }
 
         .insight-item strong {
             color: #2d3748;
-            font-size: 13px;
+            font-size: 12px;
+        }
+
+        /* --- モバイル対応 (レスポンシブスタイル) --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px 6px;
+            }
+
+            .container {
+                padding: 16px 12px;
+                border-radius: 8px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 16px;
+            }
+
+            .config-card {
+                padding: 16px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .table-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-sort {
+                width: 100%;
+            }
+
+            .chart-section-title {
+                display: block;
+            }
+
+            .modal-card {
+                padding: 16px 12px;
+                width: 95%;
+            }
         }
     </style>
 </head>
@@ -452,14 +525,22 @@
             <div class="progress-text" id="progressText">計算中...</div>
         </div>
 
-        <!-- グラフ -->
+        <!-- グラフ (レスポンシブ2行切替対応) -->
         <div class="chart-box">
-            <canvas id="customChart" width="1000" height="320"></canvas>
+            <div class="chart-wrapper" id="singleChartWrapper">
+                <canvas id="customChart" width="1000" height="320"></canvas>
+            </div>
+            <div class="chart-wrapper" id="splitChartWrapper" style="display: none;">
+                <div class="chart-section-title">前半: マス 0 (GO) 〜 19 (NY通り)</div>
+                <canvas id="customChartTop" width="500" height="220"></canvas>
+                <div class="chart-section-title">後半: マス 20 (駐車場) 〜 39 (ボードウォーク)</div>
+                <canvas id="customChartBottom" width="500" height="220"></canvas>
+            </div>
         </div>
 
         <!-- テーブルツールバー -->
         <div class="table-toolbar">
-            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666;">（行をクリックすると詳細情報と推移を表示）</small></div>
+            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると詳細情報と推移を表示）</small></div>
             <button class="btn-sort" id="sortBtn" onclick="toggleSort()">着地確率が高い順に並び替え</button>
         </div>
 
@@ -468,7 +549,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 60px;">ID</th>
+                        <th style="width: 50px;">ID</th>
                         <th>日本語場所名</th>
                         <th>英語表記</th>
                         <th>グループ</th>
@@ -616,7 +697,6 @@ const communityCardsInfo = [
 
 // 計算・状態変数
 let visitCounts = new Array(40).fill(0);
-// 10分割推移ログ用データ [40マス][10ステップ]
 let visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 let currentTurns = 0;
 let targetTurns = 1000000;
@@ -675,7 +755,7 @@ function drawCommunity() {
 
 function sendToJail() {
     pos = 10;
-    visitCounts[pos]++; // 刑務所に到達した瞬間もカウント
+    visitCounts[pos]++;
     inJail = true;
     doubleCount = 0;
     jailTurns = 0;
@@ -843,17 +923,17 @@ function toggleSort() {
     updateUI();
 }
 
-// モーダルポップアップ処理（詳細＋確率推移スパークライングラフ）
+// モーダルポップアップ処理
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
 
     let html = `
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
             <span class="badge ${item.badge}" style="font-size: 13px; padding: 4px 10px;">${item.group}</span>
             <h2 style="margin: 0; font-size: 20px; color: #2c3e50;">${item.jp}</h2>
         </div>
-        <p style="color: #666; margin-top: 0; font-size: 14px;"><strong>英語名:</strong> ${item.en} (マスNo. ${item.id})</p>
+        <p style="color: #666; margin-top: 0; font-size: 13px;"><strong>英語名:</strong> ${item.en} (マスNo. ${item.id})</p>
     `;
 
     if (item.type === "PROPERTY") {
@@ -915,14 +995,13 @@ function showDetail(id) {
             </ul>
         `;
     } else {
-        html += `<p style="line-height: 1.6; font-size: 14px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc}</p>`;
+        html += `<p style="line-height: 1.6; font-size: 13px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc}</p>`;
     }
 
-    // --- リアルタイム確率推移スパークライン (ミニCanvas) の追加 ---
+    // --- リアルタイム確率推移スパークライン ---
     let countsArr = visitHistory[item.id];
     let stepInterval = targetTurns / 10;
     
-    // 各進行度での確率(%)を算出
     let probArr = countsArr.map((cnt, i) => {
         let turnsAtStep = stepInterval * (i + 1);
         return currentTurns > 0 ? (cnt / turnsAtStep) * 100 : 0;
@@ -935,11 +1014,11 @@ function showDetail(id) {
     html += `
         <div class="history-box">
             <h4>
-                <span>確率推移と収束プロセス（10%刻み）</span>
+                <span>確率推移と収束プロセス</span>
                 <span style="font-size: 12px; color: #3498db; font-weight: bold;">確定確率: ${finalProb.toFixed(3)}%</span>
             </h4>
             <div class="history-canvas-box">
-                <canvas id="sparklineCanvas" width="520" height="150"></canvas>
+                <canvas id="sparklineCanvas" width="500" height="150"></canvas>
             </div>
             <div class="history-insight">
                 <div class="insight-item">
@@ -949,7 +1028,7 @@ function showDetail(id) {
                     最終確定 (100%): <strong>${finalProb.toFixed(3)}%</strong>
                 </div>
                 <div class="insight-item">
-                    ブレ幅 (収束安定度): <strong>${diffProb >= 0 ? '+' : ''}${diffProb.toFixed(3)}%</strong>
+                    ブレ幅: <strong>${diffProb >= 0 ? '+' : ''}${diffProb.toFixed(3)}%</strong>
                 </div>
             </div>
         </div>
@@ -958,7 +1037,6 @@ function showDetail(id) {
     document.getElementById("modalContent").innerHTML = html;
     document.getElementById("detailModal").classList.add("active");
 
-    // モーダル生成後にミニCanvas描画
     setTimeout(() => drawSparkline(probArr), 50);
 }
 
@@ -976,13 +1054,12 @@ function drawSparkline(probArr) {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Y軸範囲の設定（2.5%平均線を中心にダイナミックにスケール）
     let maxP = Math.max(...probArr, 3.5);
     let minP = Math.min(...probArr, 0);
     let yMax = Math.ceil(maxP * 1.1 * 10) / 10;
     let yMin = Math.max(0, Math.floor(minP * 0.9 * 10) / 10);
 
-    // 1. 背景グリッド
+    // グリッド
     ctx.strokeStyle = "#edf2f7";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
@@ -999,7 +1076,7 @@ function drawSparkline(probArr) {
         ctx.fillText(val.toFixed(2) + "%", pad.left - 6, y + 3);
     }
 
-    // 2. 全マス平均（2.5%）の基準点線
+    // 平均線
     if (2.5 >= yMin && 2.5 <= yMax) {
         let avgY = pad.top + chartH - ((2.5 - yMin) / (yMax - yMin)) * chartH;
         ctx.strokeStyle = "#e53e3e";
@@ -1009,7 +1086,7 @@ function drawSparkline(probArr) {
         ctx.moveTo(pad.left, avgY);
         ctx.lineTo(w - pad.right, avgY);
         ctx.stroke();
-        ctx.setLineDash([]); // 戻す
+        ctx.setLineDash([]);
 
         ctx.fillStyle = "#e53e3e";
         ctx.font = "9px sans-serif";
@@ -1017,7 +1094,7 @@ function drawSparkline(probArr) {
         ctx.fillText("全体平均 (2.5%)", pad.left + 5, avgY - 3);
     }
 
-    // 3. X軸刻みラベル（10%〜100%）
+    // X軸ラベル
     probArr.forEach((_, i) => {
         let x = pad.left + i * (chartW / 9);
         ctx.fillStyle = "#718096";
@@ -1026,7 +1103,7 @@ function drawSparkline(probArr) {
         ctx.fillText(`${(i + 1) * 10}%`, x, h - 8);
     });
 
-    // 4. 折れ線グラフ描画
+    // 折れ線
     ctx.strokeStyle = "#3182ce";
     ctx.lineWidth = 2.5;
     ctx.beginPath();
@@ -1041,7 +1118,7 @@ function drawSparkline(probArr) {
     });
     ctx.stroke();
 
-    // 5. データポイント（ドット）の描画
+    // ドット
     probArr.forEach((val, i) => {
         let x = pad.left + i * (chartW / 9);
         let ratio = (val - yMin) / (yMax - yMin || 1);
@@ -1071,13 +1148,12 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
 
-// UI更新
+// レスポンシブに応じたグラフ描画振り分け
 function updateUI() {
     let pct = ((currentTurns / targetTurns) * 100).toFixed(1);
     document.getElementById("progressBar").style.width = pct + "%";
     document.getElementById("progressText").innerText = `計算中: ${currentTurns.toLocaleString()} / ${targetTurns.toLocaleString()} ターン (${pct}%)`;
 
-    // テーブル描画データの準備
     let displayList = boardMeta.map((meta, idx) => {
         let count = visitCounts[idx];
         let prob = currentTurns > 0 ? (count / currentTurns * 100) : 0;
@@ -1086,12 +1162,10 @@ function updateUI() {
 
     let maxProb = Math.max(...displayList.map(d => d.prob));
 
-    // ソート処理
     if (isSortedByProb) {
         displayList.sort((a, b) => b.prob - a.prob);
     }
 
-    // テーブル生成
     let tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
 
@@ -1112,11 +1186,24 @@ function updateUI() {
         tbody.appendChild(tr);
     });
 
-    drawChart(maxProb);
+    // 画面幅によるグラフ切り替え（768px以下は2行表示）
+    const isMobile = window.innerWidth <= 768;
+    const singleWrapper = document.getElementById("singleChartWrapper");
+    const splitWrapper = document.getElementById("splitChartWrapper");
+
+    if (isMobile) {
+        singleWrapper.style.display = "none";
+        splitWrapper.style.display = "block";
+        drawSplitChart(maxProb);
+    } else {
+        singleWrapper.style.display = "block";
+        splitWrapper.style.display = "none";
+        drawSingleChart(maxProb);
+    }
 }
 
-// Pure Canvas グラフ描画
-function drawChart(maxProb) {
+// PC用 1行 40マスグラフ描画
+function drawSingleChart(maxProb) {
     const canvas = document.getElementById("customChart");
     const ctx = canvas.getContext("2d");
     const width = canvas.width;
@@ -1129,7 +1216,6 @@ function drawChart(maxProb) {
 
     ctx.clearRect(0, 0, width, height);
 
-    // グリッド
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 6; i++) {
@@ -1145,7 +1231,6 @@ function drawChart(maxProb) {
         ctx.fillText(`${((yMax / 6) * i).toFixed(1)}%`, padding.left - 6, y + 3);
     }
 
-    // バー描画 (常にID順)
     const barWidth = chartW / 40 - 2;
 
     boardMeta.forEach((meta, idx) => {
@@ -1165,6 +1250,68 @@ function drawChart(maxProb) {
         }
     });
 }
+
+// スマホ用 2行分割グラフ描画（前半0〜19, 後半20〜39）
+function drawSplitChart(maxProb) {
+    const yMax = Math.max(12, maxProb + 1);
+
+    const renderSub = (canvasId, startIdx, endIdx) => {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const padding = { top: 20, right: 15, bottom: 35, left: 35 };
+        const chartW = width - padding.left - padding.right;
+        const chartH = height - padding.top - padding.bottom;
+
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.strokeStyle = "#e0e0e0";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 5; i++) {
+            const y = padding.top + chartH - (i / 5) * chartH;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+
+            ctx.fillStyle = "#888";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(`${((yMax / 5) * i).toFixed(1)}%`, padding.left - 4, y + 3);
+        }
+
+        const count = endIdx - startIdx + 1;
+        const barWidth = chartW / count - 3;
+
+        for (let idx = startIdx; idx <= endIdx; idx++) {
+            let i = idx - startIdx;
+            let c = visitCounts[idx];
+            let prob = currentTurns > 0 ? (c / currentTurns * 100) : 0;
+            let x = padding.left + i * (chartW / count) + 1;
+            let h = (prob / yMax) * chartH;
+
+            ctx.fillStyle = idx === 10 ? "#e74c3c" : "#3498db";
+            ctx.fillRect(x, padding.top + chartH - h, barWidth, h);
+
+            ctx.fillStyle = "#444";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(idx, x + barWidth / 2, height - 12);
+        }
+    };
+
+    renderSub("customChartTop", 0, 19);
+    renderSub("customChartBottom", 20, 39);
+}
+
+// 画面リサイズ時にUI更新
+window.addEventListener('resize', () => {
+    if (document.getElementById("resultScreen").classList.contains("active")) {
+        updateUI();
+    }
+});
 </script>
 
 </body>
