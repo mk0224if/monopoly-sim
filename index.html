@@ -518,14 +518,13 @@
             </div>
 
             <div class="form-group">
-                <label for="totalTurns">目標試行回数（ターン数）:</label>
+                <label for="totalTurns">目標試行回数（モード）:</label>
                 <select id="totalTurns">
-                    <option value="100000">10万 ターン（高速計算）</option>
+                    <option value="300">300 ターン（1試合想定・実戦型偏り）</option>
                     <option value="1000000" selected>100万 ターン（高精度推薦）</option>
-                    <option value="10000000">1,000万 ターン（理論値へ完全収束）</option>
                     <option value="100000000">1億 ターン（極限精度・超高精度）</option>
                 </select>
-                <div class="form-help">試行回数が多いほど確率データの精度・収束度が高まります（1億ターンは計算に数秒かかります）。</div>
+                <div class="form-help">300ターンは実戦1試合の偏り分析用、100万〜1億ターンは理論値への収束検証用です。</div>
             </div>
 
             <button class="btn-start" onclick="startSimulation()">シミュレーションを開始する</button>
@@ -719,9 +718,7 @@ const communityCardsInfo = [
 
 // 計算・状態変数
 let visitCounts = new Array(40).fill(0);
-// 全体進行度ログ [40マス][10ステップ]
 let visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
-// 初期100ターンログ [40マス][10ステップ (10/20/.../100ターン)]
 let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 
 let currentTurns = 0;
@@ -896,6 +893,8 @@ function simulationLoop() {
     if (!isRunning) return;
 
     let batchSize = targetTurns >= 100000000 ? 500000 : 25000;
+    if (targetTurns === 300) batchSize = 300;
+
     for (let i = 0; i < batchSize && currentTurns < targetTurns; i++) {
         stepTurn();
     }
@@ -936,7 +935,8 @@ function startSimulation() {
     document.getElementById("resultScreen").classList.add("active");
 
     let stratText = selectedStrategy === "EARLY_EXIT" ? "即時脱出" : "ゾロ目狙い";
-    document.getElementById("configSummary").innerText = `条件: 【${stratText}】 / 目標: 【${targetTurns.toLocaleString()} ターン】`;
+    let modeText = targetTurns === 300 ? "300 ターン (1試合想定)" : `${targetTurns.toLocaleString()} ターン`;
+    document.getElementById("configSummary").innerText = `条件: 【${stratText}】 / モード: 【${modeText}】`;
 
     isRunning = true;
     simulationLoop();
