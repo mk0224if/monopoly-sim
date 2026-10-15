@@ -93,4 +93,83 @@
                     <th>差分 (%)</th>
                 </tr>
             </thead>
-            <tbody id="table
+            <tbody id="tableBody">
+                <!-- JS で動的に埋めます -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+/*
+  サンプルスクリプト：
+  - ダミーデータを作ってテーブルに入れ、キャンバスに簡単な棒グラフを描画します。
+  - 実データに置き換える場合は `data` を差し替えてください。
+*/
+
+const data = Array.from({length: 20}, (_, i) => ({
+  id: i,
+  name: `Square ${i}`,
+  group: (i % 5 === 0) ? 'Special' : `G${Math.floor(i/5)}`,
+  early: +(Math.random()*5 + 1).toFixed(2),  // ダミー %
+  long: +(Math.random()*5 + 1).toFixed(2),
+}));
+
+// テーブル埋め
+const tbody = document.getElementById('tableBody');
+data.forEach(row => {
+  const tr = document.createElement('tr');
+  if (row.name.toLowerCase().includes('jail')) tr.classList.add('jail-row');
+  tr.innerHTML = `
+    <td>${row.id}</td>
+    <td>${row.name}</td>
+    <td>${row.group}</td>
+    <td>${row.early}</td>
+    <td>${row.long}</td>
+    <td>${(row.early - row.long).toFixed(2)}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// キャンバス描画（簡易）
+const canvas = document.getElementById('customChart');
+const ctx = canvas.getContext('2d');
+const padding = 40;
+const w = canvas.width;
+const h = canvas.height;
+ctx.clearRect(0,0,w,h);
+
+// 軸
+ctx.strokeStyle = '#ddd';
+ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.moveTo(padding, padding);
+ctx.lineTo(padding, h - padding);
+ctx.lineTo(w - padding, h - padding);
+ctx.stroke();
+
+// データ描画（2 系列）
+const maxVal = Math.max(...data.flatMap(d => [d.early, d.long])) * 1.1;
+const barWidth = (w - padding*2) / data.length * 0.4;
+data.forEach((d, i) => {
+  const xBase = padding + i * ((w - padding*2) / data.length) + 10;
+  const earlyH = (d.early / maxVal) * (h - padding*2);
+  const longH = (d.long / maxVal) * (h - padding*2);
+
+  // early (blue)
+  ctx.fillStyle = '#3498db';
+  ctx.fillRect(xBase, h - padding - earlyH, barWidth, earlyH);
+
+  // long (red) (隣に)
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(xBase + barWidth + 4, h - padding - longH, barWidth, longH);
+});
+
+// 軸ラベル（左）
+ctx.fillStyle = '#666';
+ctx.font = '12px sans-serif';
+ctx.fillText('Probability (%)', 8, padding - 8);
+</script>
+
+</body>
+</html>
