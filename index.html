@@ -3,74 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>モノポリー全40マス着地確率比較シミュレーター</title>
+    <title>モノポリー（US版）確率シミュレーター</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --btn-green: #27ae60;
+            --btn-green-hover: #219150;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f6f9;
+            background-color: var(--bg-color);
             color: #333;
             margin: 0;
             padding: 20px;
         }
+
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: #fff;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            font-size: 26px;
+        }
+
+        /* 画面切替管理 */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* --- 設定画面 --- */
+        .config-card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fafafa;
+            border: 1px solid var(--border-color);
             padding: 24px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        h1 { text-align: center; color: #2c3e50; font-size: 24px; margin-bottom: 8px; }
-        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
-        
-        /* グラフエリア */
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--btn-green);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-start:hover {
+            background-color: var(--btn-green-hover);
+        }
+
+        /* --- 結果画面 --- */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-summary {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .btn-back {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        /* プログレスバー */
+        .progress-box {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 22px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-color);
+            transition: width 0.1s;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 2px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        /* グラフ */
         .chart-box {
             width: 100%;
-            overflow-x: auto;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 12px;
             background: #fafafa;
             box-sizing: border-box;
         }
-        canvas { display: block; margin: 0 auto; }
 
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin: 16px 0;
-            font-size: 14px;
-            font-weight: bold;
+        canvas {
+            display: block;
+            margin: 0 auto;
         }
-        .legend-item { display: flex; align-items: center; gap: 8px; }
-        .color-box { width: 18px; height: 18px; border-radius: 3px; }
 
-        /* テーブルエリア */
-        .table-title {
-            margin-top: 32px;
-            margin-bottom: 12px;
-            font-size: 18px;
-            color: #2c3e50;
+        /* テーブルツールバー */
+        .table-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 24px;
+            margin-bottom: 12px;
         }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn-sort {
+            padding: 6px 14px;
+            background-color: #34495e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-sort:hover {
+            background-color: #2c3e50;
+        }
+
+        /* テーブル */
         .table-box {
-            max-height: 550px;
+            max-height: 500px;
             overflow-y: auto;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; }
-        th { background: #e9ecef; position: sticky; top: 0; z-index: 10; font-weight: 600; color: #495057; }
-        tr:nth-child(even) { background: #f8f9fa; }
-        tr:hover { background: #edf2f7; }
 
-        /* 特殊ハイライト */
-        .jail-row { background-color: #fff3bf !important; font-weight: bold; }
-        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .jail-row {
+            background-color: #fff3bf !important;
+            font-weight: bold;
+        }
+
         .badge {
             display: inline-block;
             padding: 2px 8px;
@@ -79,6 +249,7 @@
             color: #fff;
             font-weight: bold;
         }
+
         .bg-brown { background-color: #8B4513; }
         .bg-light-blue { background-color: #87CEEB; color: #000; }
         .bg-purple { background-color: #DA70D6; }
@@ -95,108 +266,389 @@
 <body>
 
 <div class="container">
-    <h1>モノポリー（US版）全40マス 着地確率比較一覧</h1>
-    <div class="subtitle">試行回数: 10,000,000 ターン（完全連鎖移動判定・定常分布理論収束値）</div>
+    <h1>モノポリー（US版）確率シミュレーター</h1>
 
-    <div class="legend">
-        <div class="legend-item">
-            <div class="color-box" style="background: #3498db;"></div>
-            <span>即時脱出 (Early Exit)</span>
+    <!-- 1. 条件設定画面 -->
+    <div id="configScreen" class="screen active">
+        <div class="config-card">
+            <h2 style="margin-top: 0; font-size: 18px; color: #333;">シミュレーション条件の設定</h2>
+            
+            <div class="form-group">
+                <label for="jailStrategy">刑務所（Jail）戦略:</label>
+                <select id="jailStrategy">
+                    <option value="EARLY_EXIT">即時脱出（50ドル支払い / カード使用）</option>
+                    <option value="LONG_STAY">ゾロ目狙い（最大3ターン滞在）</option>
+                </select>
+                <div class="form-help">序盤は「即時脱出」、終盤は「ゾロ目狙い」が一般的な戦術です。</div>
+            </div>
+
+            <div class="form-group">
+                <label for="totalTurns">目標試行回数（ターン数）:</label>
+                <select id="totalTurns">
+                    <option value="100000">10万 ターン（高速計算）</option>
+                    <option value="1000000" selected>100万 ターン（高精度推薦）</option>
+                    <option value="10000000">1,000万 ターン（理論理論値へ収束）</option>
+                </select>
+                <div class="form-help">試行回数が多いほど確率データの精度・収束度が高まります。</div>
+            </div>
+
+            <button class="btn-start" onclick="startSimulation()">シミュレーションを開始する</button>
         </div>
-        <div class="legend-item">
-            <div class="color-box" style="background: #e74c3c;"></div>
-            <span>ゾロ目狙い (Long Stay)</span>
+    </div>
+
+    <!-- 2. 結果表示画面 -->
+    <div id="resultScreen" class="screen">
+        <div class="header-actions">
+            <div class="info-summary" id="configSummary">
+                設定: ---
+            </div>
+            <button class="btn-back" onclick="showConfigScreen()">条件を変更する</button>
         </div>
-    </div>
 
-    <!-- 自前描画キャンバス -->
-    <div class="chart-box">
-        <canvas id="customChart" width="1100" height="400"></canvas>
-    </div>
+        <!-- プログレスバー -->
+        <div class="progress-box">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">計算中...</div>
+        </div>
 
-    <!-- テーブルエリア -->
-    <div class="table-title">
-        <span>全40マス データテーブル</span>
-        <span style="font-size: 12px; color: #666;">※差分 = ゾロ目狙い - 即時脱出</span>
-    </div>
-    <div class="table-box">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th>日本語場所名</th>
-                    <th>英語表記</th>
-                    <th>グループ</th>
-                    <th style="width: 120px;">即時脱出 (%)</th>
-                    <th style="width: 120px;">ゾロ目狙い (%)</th>
-                    <th style="width: 100px;">差分 (%)</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        <!-- グラフ -->
+        <div class="chart-box">
+            <canvas id="customChart" width="1000" height="320"></canvas>
+        </div>
+
+        <!-- テーブルツールバー -->
+        <div class="table-toolbar">
+            <div class="table-title">全40マス 着地確率データ一覧</div>
+            <button class="btn-sort" id="sortBtn" onclick="toggleSort()">確率が高い順に並び替え</button>
+        </div>
+
+        <!-- データテーブル -->
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>日本語場所名</th>
+                        <th>英語表記</th>
+                        <th>グループ</th>
+                        <th>着地回数</th>
+                        <th>着地確率 (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-// 全40マスの完全データセット（日本語名付き）
-const data = [
-    { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", early: 3.095, long: 2.923 },
-    { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", early: 2.131, long: 2.008 },
-    { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", early: 1.884, long: 1.772 },
-    { id: 3,  jp: "バルティック通り", en: "Baltic Ave", group: "ブラウン", badge: "bg-brown", early: 2.162, long: 2.036 },
-    { id: 4,  jp: "所得税", en: "Income Tax", group: "特殊", badge: "bg-special", early: 2.325, long: 2.191 },
-    { id: 5,  jp: "リーディング鉄道", en: "Reading Railroad", group: "鉄道", badge: "bg-railroad", early: 2.965, long: 2.798 },
-    { id: 6,  jp: "オリエンタル通り", en: "Oriental Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.263, long: 2.135 },
-    { id: 7,  jp: "チャンス 1", en: "Chance 1", group: "特殊", badge: "bg-special", early: 0.865, long: 0.817 },
-    { id: 8,  jp: "バーモント通り", en: "Vermont Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.321, long: 2.190 },
-    { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.300, long: 2.170 },
-    { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "刑務所", badge: "bg-special", early: 5.882, long: 10.680 },
-    { id: 11, jp: "セント・チャールズ・プレイス", en: "St. Charles Place", group: "ライトパープル", badge: "bg-purple", early: 2.701, long: 2.592 },
-    { id: 12, jp: "電力会社", en: "Electric Company", group: "会社", badge: "bg-utility", early: 2.604, long: 2.518 },
-    { id: 13, jp: "ステーツ通り", en: "States Ave", group: "ライトパープル", badge: "bg-purple", early: 2.257, long: 2.174 },
-    { id: 14, jp: "バージニア通り", en: "Virginia Ave", group: "ライトパープル", badge: "bg-purple", early: 2.426, long: 2.336 },
-    { id: 15, jp: "ペンシルバニア鉄道", en: "Pennsylvania RR", group: "鉄道", badge: "bg-railroad", early: 2.635, long: 2.543 },
-    { id: 16, jp: "セント・ジェームス・プレイス", en: "St. James Place", group: "オレンジ", badge: "bg-orange", early: 2.792, long: 2.805 },
-    { id: 17, jp: "共同基金 2", en: "Community Chest 2", group: "特殊", badge: "bg-special", early: 2.450, long: 2.453 },
-    { id: 18, jp: "テネシー通り", en: "Tennessee Ave", group: "オレンジ", badge: "bg-orange", early: 2.935, long: 2.978 },
-    { id: 19, jp: "ニューヨーク通り", en: "New York Ave", group: "オレンジ", badge: "bg-orange", early: 2.818, long: 2.871 },
-    { id: 20, jp: "無料駐車場", en: "Free Parking", group: "特殊", badge: "bg-special", early: 2.883, long: 2.753 },
-    { id: 21, jp: "ケンタッキー通り", en: "Kentucky Ave", group: "レッド", badge: "bg-red", early: 2.835, long: 2.628 },
-    { id: 22, jp: "チャンス 2", en: "Chance 2", group: "特殊", badge: "bg-special", early: 1.055, long: 0.978 },
-    { id: 23, jp: "インディアナ通り", en: "Indiana Ave", group: "レッド", badge: "bg-red", early: 2.735, long: 2.536 },
-    { id: 24, jp: "イリノイ通り", en: "Illinois Ave", group: "レッド", badge: "bg-red", early: 3.185, long: 2.955 },
-    { id: 25, jp: "B&O 鉄道", en: "B. & O. Railroad", group: "鉄道", badge: "bg-railroad", early: 3.065, long: 2.843 },
-    { id: 26, jp: "アトランティック通り", en: "Atlantic Ave", group: "イエロー", badge: "bg-yellow", early: 2.707, long: 2.502 },
-    { id: 27, jp: "ベントナー通り", en: "Ventnor Ave", group: "イエロー", badge: "bg-yellow", early: 2.678, long: 2.476 },
-    { id: 28, jp: "水道会社", en: "Water Works", group: "会社", badge: "bg-utility", early: 2.807, long: 2.597 },
-    { id: 29, jp: "マービン・ガーデンズ", en: "Marvin Gardens", group: "イエロー", badge: "bg-yellow", early: 2.586, long: 2.390 },
-    { id: 30, jp: "刑務所へ行け (Go to Jail)", en: "Go to Jail", group: "特殊", badge: "bg-special", early: 0.000, long: 0.000 },
-    { id: 31, jp: "パシフィック通り", en: "Pacific Ave", group: "グリーン", badge: "bg-green", early: 2.677, long: 2.438 },
-    { id: 32, jp: "ノースカロライナ通り", en: "North Carolina Ave", group: "グリーン", badge: "bg-green", early: 2.625, long: 2.391 },
-    { id: 33, jp: "共同基金 3", en: "Community Chest 3", group: "特殊", badge: "bg-special", early: 2.366, long: 2.155 },
-    { id: 34, jp: "ペンシルバニア通り", en: "Pennsylvania Ave", group: "グリーン", badge: "bg-green", early: 2.500, long: 2.277 },
-    { id: 35, jp: "ショートライン鉄道", en: "Short Line RR", group: "鉄道", badge: "bg-railroad", early: 2.432, long: 2.215 },
-    { id: 36, jp: "チャンス 3", en: "Chance 3", group: "特殊", badge: "bg-special", early: 0.865, long: 0.787 },
-    { id: 37, jp: "パーク・プレイス", en: "Park Place", group: "ダークブルー", badge: "bg-dark-blue", early: 2.184, long: 1.987 },
-    { id: 38, jp: "贅沢税", en: "Luxury Tax", group: "特殊", badge: "bg-special", early: 2.179, long: 1.982 },
-    { id: 39, jp: "ボードウォーク", en: "Boardwalk", group: "ダークブルー", badge: "bg-dark-blue", early: 2.622, long: 2.384 }
+// 全40マスのメタデータ
+const boardMeta = [
+    { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special" },
+    { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown" },
+    { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special" },
+    { id: 3,  jp: "バルティック通り", en: "Baltic Ave", group: "ブラウン", badge: "bg-brown" },
+    { id: 4,  jp: "所得税", en: "Income Tax", group: "特殊", badge: "bg-special" },
+    { id: 5,  jp: "リーディング鉄道", en: "Reading Railroad", group: "鉄道", badge: "bg-railroad" },
+    { id: 6,  jp: "オリエンタル通り", en: "Oriental Ave", group: "ライトブルー", badge: "bg-light-blue" },
+    { id: 7,  jp: "チャンス 1", en: "Chance 1", group: "特殊", badge: "bg-special" },
+    { id: 8,  jp: "バーモント通り", en: "Vermont Ave", group: "ライトブルー", badge: "bg-light-blue" },
+    { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue" },
+    { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "刑務所", badge: "bg-special" },
+    { id: 11, jp: "セント・チャールズ・プレイス", en: "St. Charles Place", group: "ライトパープル", badge: "bg-purple" },
+    { id: 12, jp: "電力会社", en: "Electric Company", group: "会社", badge: "bg-utility" },
+    { id: 13, jp: "ステーツ通り", en: "States Ave", group: "ライトパープル", badge: "bg-purple" },
+    { id: 14, jp: "バージニア通り", en: "Virginia Ave", group: "ライトパープル", badge: "bg-purple" },
+    { id: 15, jp: "ペンシルバニア鉄道", en: "Pennsylvania RR", group: "鉄道", badge: "bg-railroad" },
+    { id: 16, jp: "セント・ジェームス・プレイス", en: "St. James Place", group: "オレンジ", badge: "bg-orange" },
+    { id: 17, jp: "共同基金 2", en: "Community Chest 2", group: "特殊", badge: "bg-special" },
+    { id: 18, jp: "テネシー通り", en: "Tennessee Ave", group: "オレンジ", badge: "bg-orange" },
+    { id: 19, jp: "ニューヨーク通り", en: "New York Ave", group: "オレンジ", badge: "bg-orange" },
+    { id: 20, jp: "無料駐車場", en: "Free Parking", group: "特殊", badge: "bg-special" },
+    { id: 21, jp: "ケンタッキー通り", en: "Kentucky Ave", group: "レッド", badge: "bg-red" },
+    { id: 22, jp: "チャンス 2", en: "Chance 2", group: "特殊", badge: "bg-special" },
+    { id: 23, jp: "インディアナ通り", en: "Indiana Ave", group: "レッド", badge: "bg-red" },
+    { id: 24, jp: "イリノイ通り", en: "Illinois Ave", group: "レッド", badge: "bg-red" },
+    { id: 25, jp: "B&O 鉄道", en: "B. & O. Railroad", group: "鉄道", badge: "bg-railroad" },
+    { id: 26, jp: "アトランティック通り", en: "Atlantic Ave", group: "イエロー", badge: "bg-yellow" },
+    { id: 27, jp: "ベントナー通り", en: "Ventnor Ave", group: "イエロー", badge: "bg-yellow" },
+    { id: 28, jp: "水道会社", en: "Water Works", group: "会社", badge: "bg-utility" },
+    { id: 29, jp: "マービン・ガーデンズ", en: "Marvin Gardens", group: "イエロー", badge: "bg-yellow" },
+    { id: 30, jp: "刑務所へ行け", en: "Go to Jail", group: "特殊", badge: "bg-special" },
+    { id: 31, jp: "パシフィック通り", en: "Pacific Ave", group: "グリーン", badge: "bg-green" },
+    { id: 32, jp: "ノースカロライナ通り", en: "North Carolina Ave", group: "グリーン", badge: "bg-green" },
+    { id: 33, jp: "共同基金 3", en: "Community Chest 3", group: "特殊", badge: "bg-special" },
+    { id: 34, jp: "ペンシルバニア通り", en: "Pennsylvania Ave", group: "グリーン", badge: "bg-green" },
+    { id: 35, jp: "ショートライン鉄道", en: "Short Line RR", group: "鉄道", badge: "bg-railroad" },
+    { id: 36, jp: "チャンス 3", en: "Chance 3", group: "特殊", badge: "bg-special" },
+    { id: 37, jp: "パーク・プレイス", en: "Park Place", group: "ダークブルー", badge: "bg-dark-blue" },
+    { id: 38, jp: "贅沢税", en: "Luxury Tax", group: "特殊", badge: "bg-special" },
+    { id: 39, jp: "ボードウォーク", en: "Boardwalk", group: "ダークブルー", badge: "bg-dark-blue" }
 ];
 
-// Pure Canvas 描画エンジン
-function drawChart() {
+// 計算・状態変数
+let visitCounts = new Array(40).fill(0);
+let currentTurns = 0;
+let targetTurns = 1000000;
+let selectedStrategy = "EARLY_EXIT";
+let isRunning = false;
+let animFrameId = null;
+let isSortedByProb = false; // ソート状態フラグ
+
+// プレイヤー位置状態
+let pos = 0;
+let doubleCount = 0;
+let inJail = false;
+let jailTurns = 0;
+
+// カードデッキ情報
+let chanceDeck = [];
+let communityDeck = [];
+let chanceIdx = 0;
+let communityIdx = 0;
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function initDecks() {
+    chanceDeck = [
+        "GO", "ILLINOIS", "ST_CHARLES", "UTILITY", "RAILROAD", "RAILROAD",
+        "READING", "BOARDWALK", "BACK3", "JAIL", "NONE", "NONE", "NONE", "NONE", "NONE", "NONE"
+    ];
+    communityDeck = [
+        "GO", "JAIL", "NONE", "NONE", "NONE", "NONE", "NONE", "NONE",
+        "NONE", "NONE", "NONE", "NONE", "NONE", "NONE", "NONE", "NONE"
+    ];
+    shuffle(chanceDeck);
+    shuffle(communityDeck);
+    chanceIdx = 0;
+    communityIdx = 0;
+}
+
+function drawChance() {
+    let card = chanceDeck[chanceIdx];
+    chanceIdx = (chanceIdx + 1) % 16;
+    if (chanceIdx === 0) shuffle(chanceDeck);
+    return card;
+}
+
+function drawCommunity() {
+    let card = communityDeck[communityIdx];
+    communityIdx = (communityIdx + 1) % 16;
+    if (communityIdx === 0) shuffle(communityDeck);
+    return card;
+}
+
+function sendToJail() {
+    pos = 10;
+    inJail = true;
+    doubleCount = 0;
+    jailTurns = 0;
+}
+
+// 連鎖移動処理
+function resolveLanding(tilePos) {
+    if (tilePos === 30) {
+        sendToJail();
+        return;
+    }
+
+    if ([7, 22, 36].includes(tilePos)) {
+        let card = drawChance();
+        if (card === "GO") pos = 0;
+        else if (card === "ILLINOIS") pos = 24;
+        else if (card === "ST_CHARLES") pos = 11;
+        else if (card === "READING") pos = 5;
+        else if (card === "BOARDWALK") pos = 39;
+        else if (card === "JAIL") sendToJail();
+        else if (card === "RAILROAD") {
+            if (tilePos === 7) pos = 15;
+            else if (tilePos === 22) pos = 25;
+            else pos = 5;
+        } else if (card === "UTILITY") {
+            if (tilePos === 22) pos = 28;
+            else pos = 12;
+        } else if (card === "BACK3") {
+            pos = (tilePos - 3 + 40) % 40;
+            if ([2, 17, 33].includes(pos)) {
+                resolveLanding(pos);
+            }
+        }
+    } else if ([2, 17, 33].includes(tilePos)) {
+        let card = drawCommunity();
+        if (card === "GO") pos = 0;
+        else if (card === "JAIL") sendToJail();
+    }
+}
+
+// 1ターン処理
+function stepTurn() {
+    let d1 = Math.floor(Math.random() * 6) + 1;
+    let d2 = Math.floor(Math.random() * 6) + 1;
+    let isDouble = (d1 === d2);
+
+    if (inJail) {
+        if (isDouble) {
+            inJail = false;
+            doubleCount = 0;
+            jailTurns = 0;
+            pos = (pos + d1 + d2) % 40;
+            resolveLanding(pos);
+        } else {
+            if (selectedStrategy === "EARLY_EXIT") {
+                inJail = false;
+                jailTurns = 0;
+                pos = (pos + d1 + d2) % 40;
+                resolveLanding(pos);
+            } else { // LONG_STAY
+                if (jailTurns === 2) {
+                    inJail = false;
+                    jailTurns = 0;
+                    pos = (pos + d1 + d2) % 40;
+                    resolveLanding(pos);
+                } else {
+                    jailTurns++;
+                }
+            }
+        }
+    } else {
+        if (isDouble) doubleCount++;
+        else doubleCount = 0;
+
+        if (doubleCount === 3) {
+            sendToJail();
+        } else {
+            pos = (pos + d1 + d2) % 40;
+            resolveLanding(pos);
+        }
+    }
+
+    visitCounts[pos]++;
+    currentTurns++;
+}
+
+// アニメーションループ
+function simulationLoop() {
+    if (!isRunning) return;
+
+    let batchSize = 15000;
+    for (let i = 0; i < batchSize && currentTurns < targetTurns; i++) {
+        stepTurn();
+    }
+
+    updateUI();
+
+    if (currentTurns < targetTurns) {
+        animFrameId = requestAnimationFrame(simulationLoop);
+    } else {
+        isRunning = false;
+        document.getElementById("progressText").innerText = `完了! 全 ${currentTurns.toLocaleString()} ターン計算終了`;
+    }
+}
+
+// 画面切替＆シミュレーション開始
+function startSimulation() {
+    selectedStrategy = document.getElementById("jailStrategy").value;
+    targetTurns = parseInt(document.getElementById("totalTurns").value);
+
+    // リセット
+    visitCounts.fill(0);
+    currentTurns = 0;
+    pos = 0;
+    doubleCount = 0;
+    inJail = false;
+    jailTurns = 0;
+    isSortedByProb = false;
+    document.getElementById("sortBtn").innerText = "確率が高い順に並び替え";
+    initDecks();
+
+    // 画面遷移
+    document.getElementById("configScreen").classList.remove("active");
+    document.getElementById("resultScreen").classList.add("active");
+
+    let stratText = selectedStrategy === "EARLY_EXIT" ? "即時脱出" : "ゾロ目狙い";
+    document.getElementById("configSummary").innerText = `条件: 【${stratText}】 / 目標: 【${targetTurns.toLocaleString()} ターン】`;
+
+    isRunning = true;
+    simulationLoop();
+}
+
+function showConfigScreen() {
+    isRunning = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    document.getElementById("resultScreen").classList.remove("active");
+    document.getElementById("configScreen").classList.add("active");
+}
+
+// ソート切り替え
+function toggleSort() {
+    isSortedByProb = !isSortedByProb;
+    let btn = document.getElementById("sortBtn");
+    btn.innerText = isSortedByProb ? "元の順番（ID順）に戻す" : "確率が高い順に並び替え";
+    updateUI();
+}
+
+// UI更新
+function updateUI() {
+    let pct = ((currentTurns / targetTurns) * 100).toFixed(1);
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressText").innerText = `計算中: ${currentTurns.toLocaleString()} / ${targetTurns.toLocaleString()} ターン (${pct}%)`;
+
+    // テーブル描画データの準備
+    let displayList = boardMeta.map((meta, idx) => {
+        let count = visitCounts[idx];
+        let prob = currentTurns > 0 ? (count / currentTurns * 100) : 0;
+        return { ...meta, count, prob };
+    });
+
+    let maxProb = Math.max(...displayList.map(d => d.prob));
+
+    // ソート処理
+    if (isSortedByProb) {
+        displayList.sort((a, b) => b.prob - a.prob);
+    }
+
+    // テーブル生成
+    let tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    displayList.forEach(item => {
+        let tr = document.createElement("tr");
+        if (item.id === 10) tr.classList.add("jail-row");
+        tr.innerHTML = `
+            <td><strong>${item.id}</strong></td>
+            <td><strong>${item.jp}</strong></td>
+            <td style="color: #666;">${item.en}</td>
+            <td><span class="badge ${item.badge}">${item.group}</span></td>
+            <td>${item.count.toLocaleString()}</td>
+            <td><strong>${item.prob.toFixed(3)}%</strong></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    drawChart(maxProb);
+}
+
+// Pure Canvas グラフ描画
+function drawChart(maxProb) {
     const canvas = document.getElementById("customChart");
     const ctx = canvas.getContext("2d");
     const width = canvas.width;
     const height = canvas.height;
-    
+
     const padding = { top: 30, right: 20, bottom: 40, left: 40 };
     const chartW = width - padding.left - padding.right;
     const chartH = height - padding.top - padding.bottom;
-    const maxVal = 12;
+    const yMax = Math.max(12, maxProb + 1);
 
     ctx.clearRect(0, 0, width, height);
 
-    // グリッド線描画
+    // グリッド
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 6; i++) {
@@ -209,59 +661,29 @@ function drawChart() {
         ctx.fillStyle = "#888";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "right";
-        ctx.fillText(`${(i * 2)}%`, padding.left - 6, y + 3);
+        ctx.fillText(`${((yMax / 6) * i).toFixed(1)}%`, padding.left - 6, y + 3);
     }
 
-    // バーの描画
-    const barWidth = (chartW / data.length) / 2 - 1;
+    // バー描画 (常にID順)
+    const barWidth = chartW / 40 - 2;
 
-    data.forEach((item, index) => {
-        const xBase = padding.left + (index * (chartW / data.length));
+    boardMeta.forEach((meta, idx) => {
+        let count = visitCounts[idx];
+        let prob = currentTurns > 0 ? (count / currentTurns * 100) : 0;
+        let x = padding.left + idx * (chartW / 40) + 1;
+        let h = (prob / yMax) * chartH;
 
-        // 即時脱出 (Blue)
-        const hEarly = (item.early / maxVal) * chartH;
-        ctx.fillStyle = "#3498db";
-        ctx.fillRect(xBase, padding.top + chartH - hEarly, barWidth, hEarly);
+        ctx.fillStyle = idx === 10 ? "#e74c3c" : "#3498db";
+        ctx.fillRect(x, padding.top + chartH - h, barWidth, h);
 
-        // ゾロ目狙い (Red)
-        const hLong = (item.long / maxVal) * chartH;
-        ctx.fillStyle = "#e74c3c";
-        ctx.fillRect(xBase + barWidth, padding.top + chartH - hLong, barWidth, hLong);
-
-        // X軸ラベル (ID)
-        if (index % 2 === 0 || index === 10) {
+        if (idx % 2 === 0 || idx === 10) {
             ctx.fillStyle = "#555";
             ctx.font = "10px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(item.id, xBase + barWidth, height - 15);
+            ctx.fillText(idx, x + barWidth / 2, height - 15);
         }
     });
 }
-
-// テーブルデータ全40マスの生成
-const tbody = document.getElementById("tableBody");
-data.forEach(item => {
-    const diff = (item.long - item.early).toFixed(3);
-    const tr = document.createElement("tr");
-    
-    if (item.id === 10) tr.classList.add("jail-row");
-
-    tr.innerHTML = `
-        <td><strong>${item.id}</strong></td>
-        <td><strong>${item.jp}</strong></td>
-        <td style="color: #666;">${item.en}</td>
-        <td><span class="badge ${item.badge}">${item.group}</span></td>
-        <td>${item.early.toFixed(3)}%</td>
-        <td>${item.long.toFixed(3)}%</td>
-        <td style="color: ${diff > 0 ? '#e74c3c' : (diff < 0 ? '#2980b9' : '#333')}; font-weight: bold;">
-            ${diff > 0 ? '+' + diff : diff}%
-        </td>
-    `;
-    tbody.appendChild(tr);
-});
-
-// 描画実行
-drawChart();
 </script>
 
 </body>
