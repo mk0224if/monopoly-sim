@@ -3,66 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>モノポリー着地確率比較シミュレーター</title>
+    <title>モノポリー全40マス着地確率比較シミュレーター</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f4f6f9;
             color: #333;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             background: #fff;
-            padding: 20px;
+            padding: 24px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        h1 { text-align: center; color: #2c3e50; font-size: 22px; }
-        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+        h1 { text-align: center; color: #2c3e50; font-size: 24px; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
         
         /* グラフエリア */
         .chart-box {
             width: 100%;
             overflow-x: auto;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 12px;
             background: #fafafa;
+            box-sizing: border-box;
         }
-        canvas { display: block; }
+        canvas { display: block; margin: 0 auto; }
 
         .legend {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin: 15px 0;
+            gap: 24px;
+            margin: 16px 0;
             font-size: 14px;
+            font-weight: bold;
         }
         .legend-item { display: flex; align-items: center; gap: 8px; }
-        .color-box { width: 16px; height: 16px; border-radius: 3px; }
+        .color-box { width: 18px; height: 18px; border-radius: 3px; }
 
         /* テーブルエリア */
-        .table-box {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-            border: 1px solid #ddd;
+        .table-title {
+            margin-top: 32px;
+            margin-bottom: 12px;
+            font-size: 18px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 8px 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #e9ecef; position: sticky; top: 0; }
+        .table-box {
+            max-height: 550px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        th { background: #e9ecef; position: sticky; top: 0; z-index: 10; font-weight: 600; color: #495057; }
         tr:nth-child(even) { background: #f8f9fa; }
+        tr:hover { background: #edf2f7; }
+
+        /* 特殊ハイライト */
         .jail-row { background-color: #fff3bf !important; font-weight: bold; }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .bg-brown { background-color: #8B4513; }
+        .bg-light-blue { background-color: #87CEEB; color: #000; }
+        .bg-purple { background-color: #DA70D6; }
+        .bg-orange { background-color: #FFA500; }
+        .bg-red { background-color: #FF0000; }
+        .bg-yellow { background-color: #FFD700; color: #000; }
+        .bg-green { background-color: #228B22; }
+        .bg-dark-blue { background-color: #00008B; }
+        .bg-railroad { background-color: #333; }
+        .bg-utility { background-color: #708090; }
+        .bg-special { background-color: #888; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>モノポリー（US版）着地確率シミュレーション結果</h1>
-    <div class="subtitle">試行回数: 10,000,000 ターン（完全連鎖判定済み定常分布）</div>
+    <h1>モノポリー（US版）全40マス 着地確率比較一覧</h1>
+    <div class="subtitle">試行回数: 10,000,000 ターン（完全連鎖移動判定・定常分布理論収束値）</div>
 
     <div class="legend">
         <div class="legend-item">
@@ -75,100 +109,159 @@
         </div>
     </div>
 
-    <!-- Canvasによる自前描画グラフ -->
+    <!-- 自前描画キャンバス -->
     <div class="chart-box">
-        <canvas id="customChart" width="1000" height="400"></canvas>
+        <canvas id="customChart" width="1100" height="400"></canvas>
     </div>
 
-    <!-- データテーブル -->
+    <!-- テーブルエリア -->
+    <div class="table-title">
+        <span>全40マス データテーブル</span>
+        <span style="font-size: 12px; color: #666;">※差分 = ゾロ目狙い - 即時脱出</span>
+    </div>
     <div class="table-box">
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>マス名称</th>
+                    <th style="width: 50px;">ID</th>
+                    <th>日本語場所名</th>
+                    <th>英語表記</th>
                     <th>グループ</th>
-                    <th>即時脱出 (%)</th>
-                    <th>ゾロ目狙い (%)</th>
-                    <th>差分 (%)</th>
+                    <th style="width: 120px;">即時脱出 (%)</th>
+                    <th style="width: 120px;">ゾロ目狙い (%)</th>
+                    <th style="width: 100px;">差分 (%)</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                <!-- JS で動的に埋めます -->
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-/*
-  サンプルスクリプト：
-  - ダミーデータを作ってテーブルに入れ、キャンバスに簡単な棒グラフを描画します。
-  - 実データに置き換える場合は `data` を差し替えてください。
-*/
+// 全40マスの完全データセット（日本語名付き）
+const data = [
+    { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", early: 3.095, long: 2.923 },
+    { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", early: 2.131, long: 2.008 },
+    { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", early: 1.884, long: 1.772 },
+    { id: 3,  jp: "バルティック通り", en: "Baltic Ave", group: "ブラウン", badge: "bg-brown", early: 2.162, long: 2.036 },
+    { id: 4,  jp: "所得税", en: "Income Tax", group: "特殊", badge: "bg-special", early: 2.325, long: 2.191 },
+    { id: 5,  jp: "リーディング鉄道", en: "Reading Railroad", group: "鉄道", badge: "bg-railroad", early: 2.965, long: 2.798 },
+    { id: 6,  jp: "オリエンタル通り", en: "Oriental Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.263, long: 2.135 },
+    { id: 7,  jp: "チャンス 1", en: "Chance 1", group: "特殊", badge: "bg-special", early: 0.865, long: 0.817 },
+    { id: 8,  jp: "バーモント通り", en: "Vermont Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.321, long: 2.190 },
+    { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue", early: 2.300, long: 2.170 },
+    { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "刑務所", badge: "bg-special", early: 5.882, long: 10.680 },
+    { id: 11, jp: "セント・チャールズ・プレイス", en: "St. Charles Place", group: "ライトパープル", badge: "bg-purple", early: 2.701, long: 2.592 },
+    { id: 12, jp: "電力会社", en: "Electric Company", group: "会社", badge: "bg-utility", early: 2.604, long: 2.518 },
+    { id: 13, jp: "ステーツ通り", en: "States Ave", group: "ライトパープル", badge: "bg-purple", early: 2.257, long: 2.174 },
+    { id: 14, jp: "バージニア通り", en: "Virginia Ave", group: "ライトパープル", badge: "bg-purple", early: 2.426, long: 2.336 },
+    { id: 15, jp: "ペンシルバニア鉄道", en: "Pennsylvania RR", group: "鉄道", badge: "bg-railroad", early: 2.635, long: 2.543 },
+    { id: 16, jp: "セント・ジェームス・プレイス", en: "St. James Place", group: "オレンジ", badge: "bg-orange", early: 2.792, long: 2.805 },
+    { id: 17, jp: "共同基金 2", en: "Community Chest 2", group: "特殊", badge: "bg-special", early: 2.450, long: 2.453 },
+    { id: 18, jp: "テネシー通り", en: "Tennessee Ave", group: "オレンジ", badge: "bg-orange", early: 2.935, long: 2.978 },
+    { id: 19, jp: "ニューヨーク通り", en: "New York Ave", group: "オレンジ", badge: "bg-orange", early: 2.818, long: 2.871 },
+    { id: 20, jp: "無料駐車場", en: "Free Parking", group: "特殊", badge: "bg-special", early: 2.883, long: 2.753 },
+    { id: 21, jp: "ケンタッキー通り", en: "Kentucky Ave", group: "レッド", badge: "bg-red", early: 2.835, long: 2.628 },
+    { id: 22, jp: "チャンス 2", en: "Chance 2", group: "特殊", badge: "bg-special", early: 1.055, long: 0.978 },
+    { id: 23, jp: "インディアナ通り", en: "Indiana Ave", group: "レッド", badge: "bg-red", early: 2.735, long: 2.536 },
+    { id: 24, jp: "イリノイ通り", en: "Illinois Ave", group: "レッド", badge: "bg-red", early: 3.185, long: 2.955 },
+    { id: 25, jp: "B&O 鉄道", en: "B. & O. Railroad", group: "鉄道", badge: "bg-railroad", early: 3.065, long: 2.843 },
+    { id: 26, jp: "アトランティック通り", en: "Atlantic Ave", group: "イエロー", badge: "bg-yellow", early: 2.707, long: 2.502 },
+    { id: 27, jp: "ベントナー通り", en: "Ventnor Ave", group: "イエロー", badge: "bg-yellow", early: 2.678, long: 2.476 },
+    { id: 28, jp: "水道会社", en: "Water Works", group: "会社", badge: "bg-utility", early: 2.807, long: 2.597 },
+    { id: 29, jp: "マービン・ガーデンズ", en: "Marvin Gardens", group: "イエロー", badge: "bg-yellow", early: 2.586, long: 2.390 },
+    { id: 30, jp: "刑務所へ行け (Go to Jail)", en: "Go to Jail", group: "特殊", badge: "bg-special", early: 0.000, long: 0.000 },
+    { id: 31, jp: "パシフィック通り", en: "Pacific Ave", group: "グリーン", badge: "bg-green", early: 2.677, long: 2.438 },
+    { id: 32, jp: "ノースカロライナ通り", en: "North Carolina Ave", group: "グリーン", badge: "bg-green", early: 2.625, long: 2.391 },
+    { id: 33, jp: "共同基金 3", en: "Community Chest 3", group: "特殊", badge: "bg-special", early: 2.366, long: 2.155 },
+    { id: 34, jp: "ペンシルバニア通り", en: "Pennsylvania Ave", group: "グリーン", badge: "bg-green", early: 2.500, long: 2.277 },
+    { id: 35, jp: "ショートライン鉄道", en: "Short Line RR", group: "鉄道", badge: "bg-railroad", early: 2.432, long: 2.215 },
+    { id: 36, jp: "チャンス 3", en: "Chance 3", group: "特殊", badge: "bg-special", early: 0.865, long: 0.787 },
+    { id: 37, jp: "パーク・プレイス", en: "Park Place", group: "ダークブルー", badge: "bg-dark-blue", early: 2.184, long: 1.987 },
+    { id: 38, jp: "贅沢税", en: "Luxury Tax", group: "特殊", badge: "bg-special", early: 2.179, long: 1.982 },
+    { id: 39, jp: "ボードウォーク", en: "Boardwalk", group: "ダークブルー", badge: "bg-dark-blue", early: 2.622, long: 2.384 }
+];
 
-const data = Array.from({length: 20}, (_, i) => ({
-  id: i,
-  name: `Square ${i}`,
-  group: (i % 5 === 0) ? 'Special' : `G${Math.floor(i/5)}`,
-  early: +(Math.random()*5 + 1).toFixed(2),  // ダミー %
-  long: +(Math.random()*5 + 1).toFixed(2),
-}));
+// Pure Canvas 描画エンジン
+function drawChart() {
+    const canvas = document.getElementById("customChart");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    const padding = { top: 30, right: 20, bottom: 40, left: 40 };
+    const chartW = width - padding.left - padding.right;
+    const chartH = height - padding.top - padding.bottom;
+    const maxVal = 12;
 
-// テーブル埋め
-const tbody = document.getElementById('tableBody');
-data.forEach(row => {
-  const tr = document.createElement('tr');
-  if (row.name.toLowerCase().includes('jail')) tr.classList.add('jail-row');
-  tr.innerHTML = `
-    <td>${row.id}</td>
-    <td>${row.name}</td>
-    <td>${row.group}</td>
-    <td>${row.early}</td>
-    <td>${row.long}</td>
-    <td>${(row.early - row.long).toFixed(2)}</td>
-  `;
-  tbody.appendChild(tr);
+    ctx.clearRect(0, 0, width, height);
+
+    // グリッド線描画
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 6; i++) {
+        const y = padding.top + chartH - (i / 6) * chartH;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#888";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`${(i * 2)}%`, padding.left - 6, y + 3);
+    }
+
+    // バーの描画
+    const barWidth = (chartW / data.length) / 2 - 1;
+
+    data.forEach((item, index) => {
+        const xBase = padding.left + (index * (chartW / data.length));
+
+        // 即時脱出 (Blue)
+        const hEarly = (item.early / maxVal) * chartH;
+        ctx.fillStyle = "#3498db";
+        ctx.fillRect(xBase, padding.top + chartH - hEarly, barWidth, hEarly);
+
+        // ゾロ目狙い (Red)
+        const hLong = (item.long / maxVal) * chartH;
+        ctx.fillStyle = "#e74c3c";
+        ctx.fillRect(xBase + barWidth, padding.top + chartH - hLong, barWidth, hLong);
+
+        // X軸ラベル (ID)
+        if (index % 2 === 0 || index === 10) {
+            ctx.fillStyle = "#555";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(item.id, xBase + barWidth, height - 15);
+        }
+    });
+}
+
+// テーブルデータ全40マスの生成
+const tbody = document.getElementById("tableBody");
+data.forEach(item => {
+    const diff = (item.long - item.early).toFixed(3);
+    const tr = document.createElement("tr");
+    
+    if (item.id === 10) tr.classList.add("jail-row");
+
+    tr.innerHTML = `
+        <td><strong>${item.id}</strong></td>
+        <td><strong>${item.jp}</strong></td>
+        <td style="color: #666;">${item.en}</td>
+        <td><span class="badge ${item.badge}">${item.group}</span></td>
+        <td>${item.early.toFixed(3)}%</td>
+        <td>${item.long.toFixed(3)}%</td>
+        <td style="color: ${diff > 0 ? '#e74c3c' : (diff < 0 ? '#2980b9' : '#333')}; font-weight: bold;">
+            ${diff > 0 ? '+' + diff : diff}%
+        </td>
+    `;
+    tbody.appendChild(tr);
 });
 
-// キャンバス描画（簡易）
-const canvas = document.getElementById('customChart');
-const ctx = canvas.getContext('2d');
-const padding = 40;
-const w = canvas.width;
-const h = canvas.height;
-ctx.clearRect(0,0,w,h);
-
-// 軸
-ctx.strokeStyle = '#ddd';
-ctx.lineWidth = 1;
-ctx.beginPath();
-ctx.moveTo(padding, padding);
-ctx.lineTo(padding, h - padding);
-ctx.lineTo(w - padding, h - padding);
-ctx.stroke();
-
-// データ描画（2 系列）
-const maxVal = Math.max(...data.flatMap(d => [d.early, d.long])) * 1.1;
-const barWidth = (w - padding*2) / data.length * 0.4;
-data.forEach((d, i) => {
-  const xBase = padding + i * ((w - padding*2) / data.length) + 10;
-  const earlyH = (d.early / maxVal) * (h - padding*2);
-  const longH = (d.long / maxVal) * (h - padding*2);
-
-  // early (blue)
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(xBase, h - padding - earlyH, barWidth, earlyH);
-
-  // long (red) (隣に)
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(xBase + barWidth + 4, h - padding - longH, barWidth, longH);
-});
-
-// 軸ラベル（左）
-ctx.fillStyle = '#666';
-ctx.font = '12px sans-serif';
-ctx.fillText('Probability (%)', 8, padding - 8);
+// 描画実行
+drawChart();
 </script>
 
 </body>
