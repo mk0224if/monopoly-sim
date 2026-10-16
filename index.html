@@ -198,10 +198,10 @@
         /* --- 改良型 高コントラスト・高視認性番号ピン --- */
         .board-pin {
             position: absolute;
-            width: 24px;
-            height: 24px;
-            margin-left: -12px;
-            margin-top: -12px;
+            width: 3.5%;
+            aspect-ratio: 1 / 1;
+            margin: 0;
+            transform: translate(-50%, -50%);
             font-size: 11px;
             font-weight: 800;
             border-radius: 50%;
@@ -217,7 +217,7 @@
         }
 
         .board-pin:hover {
-            transform: scale(1.4);
+            transform: translate(-50%, -50%) scale(1.4);
             box-shadow: 0 0 0 2px #ffffff, 0 5px 12px rgba(0,0,0,0.9);
             z-index: 30;
         }
@@ -571,11 +571,9 @@
             }
 
             .board-pin {
-                width: 21px;
-                height: 21px;
-                margin-left: -10.5px;
-                margin-top: -10.5px;
+                width: 3.5%;
                 font-size: 9.5px;
+                border-width: 1.5px;
             }
         }
     </style>
@@ -1005,38 +1003,46 @@ function simulationLoop() {
 
 // 上下左右完全対称・位置ジャストフィット座標算出関数
 function getTileCoordinates(id) {
-    const leftEdge = 7.1;   // 左列マスの中心（%）
-    const rightEdge = 92.9; // 右列マスの中心（%）
-    const topEdge = 7.1;    // 上行マスの中心（%）
-    const bottomEdge = 92.9;// 下行マスの中心（%）
+    // 盤面画像の外周にある各マスの中心位置（%）。
+    // 四隅のコーナーマスは通常のマスより幅が広いため、別々に配置する。
+    const leftCorner = 4.3;
+    const rightCorner = 95.7;
+    const topCorner = 5.1;
+    const bottomCorner = 95.5;
 
-    const stepX = (rightEdge - leftEdge) / 10; // 横方向の1マス幅 (8.58%)
-    const stepY = (bottomEdge - topEdge) / 10; // 縦方向の1マス幅 (8.58%)
+    // コーナーマスを除く各辺のマス中心（1〜9マス目）
+    // 写真の盤面では辺ごとにコーナーマスの幅が異なるため、横・縦それぞれ調整する。
+    const bottomLeftStart = 18.6;
+    const bottomLeftEnd = 87.2;
+    const topRightStart = 13.0;
+    const topRightEnd = 81.5;
+    const stepBottomLeft = (bottomLeftEnd - bottomLeftStart) / 8;
+    const stepTopRight = (topRightEnd - topRightStart) / 8;
 
     // 四隅コーナーマス
-    if (id === 0)  return { left: rightEdge, top: bottomEdge }; // GO (右下)
-    if (id === 10) return { left: leftEdge,  top: bottomEdge }; // 刑務所 (左下)
-    if (id === 20) return { left: leftEdge,  top: topEdge };    // 無料駐車場 (左上)
-    if (id === 30) return { left: rightEdge, top: topEdge };    // Go to Jail (右上)
+    if (id === 0)  return { left: rightCorner, top: bottomCorner }; // GO (右下)
+    if (id === 10) return { left: leftCorner,  top: bottomCorner }; // 刑務所 (左下)
+    if (id === 20) return { left: leftCorner,  top: topCorner };    // 無料駐車場 (左上)
+    if (id === 30) return { left: rightCorner, top: topCorner };    // Go to Jail (右上)
 
     // 下辺 (1〜9): 右から左へ
     if (id >= 1 && id <= 9) {
-        return { left: rightEdge - (id * stepX), top: bottomEdge };
+        return { left: bottomLeftEnd - ((id - 1) * stepBottomLeft), top: bottomCorner };
     }
 
     // 左辺 (11〜19): 下から上へ
     if (id >= 11 && id <= 19) {
-        return { left: leftEdge, top: bottomEdge - ((id - 10) * stepY) };
+        return { left: leftCorner, top: bottomLeftEnd - ((id - 11) * stepBottomLeft) };
     }
 
     // 上辺 (21〜29): 左から右へ
     if (id >= 21 && id <= 29) {
-        return { left: leftEdge + ((id - 20) * stepX), top: topEdge };
+        return { left: topRightStart + ((id - 21) * stepTopRight), top: topCorner };
     }
 
     // 右辺 (31〜39): 上から下へ
     if (id >= 31 && id <= 39) {
-        return { left: rightEdge, top: topEdge + ((id - 30) * stepY) };
+        return { left: rightCorner, top: topRightStart + ((id - 31) * stepTopRight) };
     }
 }
 
