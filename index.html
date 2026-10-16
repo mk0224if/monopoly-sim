@@ -363,6 +363,84 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
 
+        /* --- サイコロ確率セクション（最下部） --- */
+        .dice-section {
+            margin-top: 32px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .dice-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dice-table-container {
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .dice-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+            min-width: 550px;
+        }
+
+        .dice-table th {
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 8px 10px;
+            font-weight: bold;
+            border-bottom: 2px solid #cbd5e0;
+        }
+
+        .dice-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .dice-table tr.highlight-row {
+            background-color: #ebf8ff;
+            font-weight: bold;
+        }
+
+        .prob-bar-container {
+            width: 100%;
+            background-color: #edf2f7;
+            border-radius: 3px;
+            height: 10px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            background-color: #3182ce;
+        }
+
+        .dice-note-box {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #fffaf0;
+            border-left: 4px solid #dd6b20;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #7b341e;
+            line-height: 1.5;
+        }
+
         /* モーダルダイアログ */
         .modal-overlay {
             display: none;
@@ -671,6 +749,111 @@
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
+        </div>
+
+        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部) -->
+        <div class="dice-section">
+            <div class="dice-section-title">
+                🎲 2個のサイコロを振った時の出目・確率分布（理論値）
+            </div>
+            <div class="dice-table-container">
+                <table class="dice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">合計の目</th>
+                            <th>組み合わせパターン（ダイス1, ダイス2）</th>
+                            <th style="width: 90px;">パターン数</th>
+                            <th style="width: 100px;">理論出現率</th>
+                            <th style="width: 150px;">確率グラフ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>2</strong></td>
+                            <td style="color: #666;">(1,1)</td>
+                            <td>1 / 36</td>
+                            <td><strong>2.78%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 16.7%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>3</strong></td>
+                            <td style="color: #666;">(1,2), (2,1)</td>
+                            <td>2 / 36</td>
+                            <td><strong>5.56%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 33.3%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>4</strong></td>
+                            <td style="color: #666;">(1,3), (2,2), (3,1)</td>
+                            <td>3 / 36</td>
+                            <td><strong>8.33%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 50.0%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>5</strong></td>
+                            <td style="color: #666;">(1,4), (2,3), (3,2), (4,1)</td>
+                            <td>4 / 36</td>
+                            <td><strong>11.11%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 66.7%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>6</strong></td>
+                            <td style="color: #666;">(1,5), (2,4), (3,3), (4,2), (5,1)</td>
+                            <td>5 / 36</td>
+                            <td><strong>13.89%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 83.3%;"></div></div></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong style="color: #2b6cb0; font-size: 15px;">7</strong></td>
+                            <td style="color: #2b6cb0;">(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)</td>
+                            <td><strong style="color: #2b6cb0;">6 / 36</strong></td>
+                            <td><strong style="color: #2b6cb0; font-size: 14px;">16.67%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 100%; background-color: #2b6cb0;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>8</strong></td>
+                            <td style="color: #666;">(2,6), (3,5), (4,4), (5,3), (6,2)</td>
+                            <td>5 / 36</td>
+                            <td><strong>13.89%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 83.3%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>9</strong></td>
+                            <td style="color: #666;">(3,6), (4,5), (5,4), (6,3)</td>
+                            <td>4 / 36</td>
+                            <td><strong>11.11%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 66.7%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>10</strong></td>
+                            <td style="color: #666;">(4,6), (5,5), (6,4)</td>
+                            <td>3 / 36</td>
+                            <td><strong>8.33%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 50.0%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>11</strong></td>
+                            <td style="color: #666;">(5,6), (6,5)</td>
+                            <td>2 / 36</td>
+                            <td><strong>5.56%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 33.3%;"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>12</strong></td>
+                            <td style="color: #666;">(6,6)</td>
+                            <td>1 / 36</td>
+                            <td><strong>2.78%</strong></td>
+                            <td><div class="prob-bar-container"><div class="prob-bar-fill" style="width: 16.7%;"></div></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dice-note-box">
+                <strong>💡 モノポリーにおけるゾロ目（ダブルス）の確率:</strong><br>
+                任意のゾロ目（1-1, 2-2, ..., 6-6）が出る確率は <strong>6/36 ＝ 1/6 (約16.67%)</strong> です。<br>
+                3回連続でゾロ目が出る確率は <strong>(1/6)³ ＝ 1/216 (約0.46%)</strong> となり、出た瞬間に「刑務所送り」となります。
+            </div>
         </div>
     </div>
 </div>
@@ -1003,16 +1186,15 @@ function simulationLoop() {
     }
 }
 
-// 上下左右完全対称・位置ジャストフィット座標算出関数
+// 上下左右完全対称・微調整（11.7 / 88.3）適用済み座標算出関数
 function getTileCoordinates(id) {
-    
-    const leftEdge = 11.7;   // 左列（11〜19）をさらにギュッと右（内側）へ
-    const rightEdge = 88.3;  // 右列（31〜39）をさらにギュッと左（内側）へ
-    const topEdge = 11.7;    // 上行（21〜29）をさらにギュッと下（内側）へ
-    const bottomEdge = 88.3; // 下行（1〜9）をさらにギュッと上（内側）へ
-    
-    const stepX = (rightEdge - leftEdge) / 10; // 横方向の1マス幅 (8.58%)
-    const stepY = (bottomEdge - topEdge) / 10; // 縦方向の1マス幅 (8.58%)
+    const leftEdge = 11.7;   // 左列マスの中心（%）
+    const rightEdge = 88.3;  // 右列マスの中心（%）
+    const topEdge = 11.7;    // 上行マスの中心（%）
+    const bottomEdge = 88.3; // 下行マスの中心（%）
+
+    const stepX = (rightEdge - leftEdge) / 10; // 横方向の1マス幅 (7.66%)
+    const stepY = (bottomEdge - topEdge) / 10; // 縦方向の1マス幅 (7.66%)
 
     // 四隅コーナーマス
     if (id === 0)  return { left: rightEdge, top: bottomEdge }; // GO (右下)
