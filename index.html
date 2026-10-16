@@ -1006,10 +1006,10 @@ function simulationLoop() {
 // 上下左右完全対称・位置ジャストフィット座標算出関数
 function getTileCoordinates(id) {
     
-    const leftEdge = 9.6;   // 左列（11〜19）をさらにほんの少し右へ
-    const rightEdge = 90.4; // 右列（31〜39）をさらにほんの少し左へ
-    const topEdge = 9.6;    // 上行（21〜29）をさらにほんの少し下へ
-    const bottomEdge = 90.4;// 下行（1〜9）をさらにほんの少し上へ
+    const leftEdge = 10.0;   // 左列（11〜19）をさらにギュッと右（内側）へ
+    const rightEdge = 90.0;  // 右列（31〜39）をさらにギュッと左（内側）へ
+    const topEdge = 10.0;    // 上行（21〜29）をさらにギュッと下（内側）へ
+    const bottomEdge = 90.0; // 下行（1〜9）をさらにギュッと上（内側）へ
     
     const stepX = (rightEdge - leftEdge) / 10; // 横方向の1マス幅 (8.58%)
     const stepY = (bottomEdge - topEdge) / 10; // 縦方向の1マス幅 (8.58%)
