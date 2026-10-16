@@ -263,6 +263,7 @@
             margin: 0 auto;
             max-width: 100%;
             height: auto;
+            cursor: pointer;
         }
 
         /* テーブルツールバー */
@@ -632,7 +633,7 @@
         <div class="board-view-card">
             <div class="board-title">盤面マップ対比ガイド（丸バッジの色は各物件グループに対応 / クリックで詳細）</div>
             <div class="board-container">
-                <img src="IMG_1568.jpg" alt="モノポリー盤面" id="boardImg">
+                <img src="images/board.jpeg" alt="モノポリー盤面" id="boardImg">
                 <div id="boardPinsOverlay"></div>
             </div>
         </div>
@@ -1003,7 +1004,7 @@ function simulationLoop() {
     }
 }
 
-// 画像上の40マスの正確な座標算出（画像の白い外枠・マス間隔を自動調整）
+// 画像上の40マスの正確な座標算出
 function getTileCoordinates(id) {
     const cOffset = 7.6; // 四隅マスの中心位置(%)
     const step = 8.25;  // 各通常マスの間隔(%)
@@ -1471,6 +1472,20 @@ function drawSingleChart(maxProb) {
             ctx.fillText(idx, x + barWidth / 2, height - 15);
         }
     });
+
+    // グラフクリックイベント（モーダル遷移）
+    canvas.onclick = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const clickX = (e.clientX - rect.left) * scaleX;
+
+        if (clickX >= padding.left && clickX <= width - padding.right) {
+            const index = Math.floor((clickX - padding.left) / (chartW / 40));
+            if (index >= 0 && index < 40) {
+                showDetail(index);
+            }
+        }
+    };
 }
 
 // スマホ用 2行分割グラフ描画（前半0〜19, 後半20〜39）
@@ -1522,6 +1537,21 @@ function drawSplitChart(maxProb) {
             ctx.textAlign = "center";
             ctx.fillText(idx, x + barWidth / 2, height - 12);
         }
+
+        // 分割グラフのクリックイベント
+        canvas.onclick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const clickX = (e.clientX - rect.left) * scaleX;
+
+            if (clickX >= padding.left && clickX <= width - padding.right) {
+                const subIndex = Math.floor((clickX - padding.left) / (chartW / count));
+                const targetId = startIdx + subIndex;
+                if (targetId >= startIdx && targetId <= endIdx) {
+                    showDetail(targetId);
+                }
+            }
+        };
     };
 
     renderSub("customChartTop", 0, 19);
