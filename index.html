@@ -195,22 +195,22 @@
             display: block;
         }
 
-        /* 番号ピンのスタイル */
+        /* --- 改良型 高コントラスト・高視認性番号ピン --- */
         .board-pin {
             position: absolute;
-            width: 24px;
-            height: 24px;
-            margin-left: -12px;
-            margin-top: -12px;
-            color: #ffffff;
+            width: 25px;
+            height: 25px;
+            margin-left: -12.5px;
+            margin-top: -12.5px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 800;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            /* 背景と被らない黒のくっきり枠＋白光彩シャドウ */
+            border: 2px solid #000000;
+            box-shadow: 0 0 0 1.5px #ffffff, 0 3px 8px rgba(0,0,0,0.6);
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
             z-index: 5;
@@ -218,23 +218,23 @@
         }
 
         .board-pin:hover {
-            transform: scale(1.35);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            z-index: 20;
+            transform: scale(1.4);
+            box-shadow: 0 0 0 2px #ffffff, 0 5px 12px rgba(0,0,0,0.9);
+            z-index: 30;
         }
 
-        /* 物件カラーグループ連動色 */
-        .pin-brown { background-color: #8B4513; }
-        .pin-light-blue { background-color: #3a9bdc; color: #fff; }
-        .pin-purple { background-color: #DA70D6; }
-        .pin-orange { background-color: #FF8C00; }
-        .pin-red { background-color: #E74C3C; }
-        .pin-yellow { background-color: #f1c40f; color: #222; }
-        .pin-green { background-color: #27ae60; }
-        .pin-dark-blue { background-color: #1a365d; }
-        .pin-railroad { background-color: #2d3748; }
-        .pin-utility { background-color: #718096; }
-        .pin-special { background-color: #4a5568; }
+        /* グループカラーの明度・彩度調整（背景と被らない色設計） */
+        .pin-brown       { background-color: #5c2c0e; color: #ffffff; }
+        .pin-light-blue  { background-color: #0088cc; color: #ffffff; }
+        .pin-purple      { background-color: #b030b0; color: #ffffff; }
+        .pin-orange      { background-color: #e66000; color: #ffffff; }
+        .pin-red         { background-color: #d32f2f; color: #ffffff; }
+        .pin-yellow      { background-color: #ffd700; color: #000000; }
+        .pin-green       { background-color: #1b8a43; color: #ffffff; }
+        .pin-dark-blue   { background-color: #0d2354; color: #ffffff; }
+        .pin-railroad    { background-color: #111111; color: #ffffff; }
+        .pin-utility     { background-color: #4a5568; color: #ffffff; }
+        .pin-special     { background-color: #ffffff; color: #000000; border-color: #000000; }
 
         /* グラフボックス */
         .chart-box {
@@ -572,11 +572,11 @@
             }
 
             .board-pin {
-                width: 20px;
-                height: 20px;
-                margin-left: -10px;
-                margin-top: -10px;
-                font-size: 9px;
+                width: 21px;
+                height: 21px;
+                margin-left: -10.5px;
+                margin-top: -10.5px;
+                font-size: 9.5px;
             }
         }
     </style>
@@ -631,7 +631,7 @@
 
         <!-- ボード画像＆カラーマッピング対比エリア -->
         <div class="board-view-card">
-            <div class="board-title">盤面マップ対比ガイド（丸バッジの色は各物件グループに対応 / クリックで詳細）</div>
+            <div class="board-title">盤面マップ対比ガイド（黒枠丸バッジの色は各グループに対応 / クリックで詳細）</div>
             <div class="board-container">
                 <img src="images/board.jpeg" alt="モノポリー盤面" id="boardImg">
                 <div id="boardPinsOverlay"></div>
@@ -1004,10 +1004,10 @@ function simulationLoop() {
     }
 }
 
-// 画像上の40マスの正確な座標算出
+// 【精密再構築】画像上の40マスの真中央プロロット座標算出
 function getTileCoordinates(id) {
-    const cOffset = 7.6; // 四隅マスの中心位置(%)
-    const step = 8.25;  // 各通常マスの間隔(%)
+    const cOffset = 6.8; // 四隅（GO, 刑務所, 駐車場, GoToJail）の中心位置(%)
+    const step = 8.08;   // 各通常マスの幾何学的正確な間隔(%)
 
     if (id === 0) return { left: 100 - cOffset, top: 100 - cOffset }; // 右下 (GO)
 
