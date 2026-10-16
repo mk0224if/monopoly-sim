@@ -198,17 +198,16 @@
         /* --- 改良型 高コントラスト・高視認性番号ピン --- */
         .board-pin {
             position: absolute;
-            width: 25px;
-            height: 25px;
-            margin-left: -12.5px;
-            margin-top: -12.5px;
+            width: 24px;
+            height: 24px;
+            margin-left: -12px;
+            margin-top: -12px;
             font-size: 11px;
             font-weight: 800;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* 背景と被らない黒のくっきり枠＋白光彩シャドウ */
             border: 2px solid #000000;
             box-shadow: 0 0 0 1.5px #ffffff, 0 3px 8px rgba(0,0,0,0.6);
             cursor: pointer;
@@ -223,7 +222,7 @@
             z-index: 30;
         }
 
-        /* グループカラーの明度・彩度調整（背景と被らない色設計） */
+        /* グループカラーの明度・彩度調整 */
         .pin-brown       { background-color: #5c2c0e; color: #ffffff; }
         .pin-light-blue  { background-color: #0088cc; color: #ffffff; }
         .pin-purple      { background-color: #b030b0; color: #ffffff; }
@@ -962,7 +961,7 @@ function stepTurn() {
 
     currentTurns++;
 
-    // 初期100ターンのスナップショット (10, 20, ..., 100ターン目)
+    // 初期100ターンのスナップショット
     if (currentTurns <= 100 && currentTurns % 10 === 0) {
         let earlyIdx = (currentTurns / 10) - 1;
         for (let i = 0; i < 40; i++) {
@@ -1004,37 +1003,40 @@ function simulationLoop() {
     }
 }
 
-// 【精密再構築】画像上の40マスの真中央プロロット座標算出
+// 上下左右完全対称・位置ジャストフィット座標算出関数
 function getTileCoordinates(id) {
-    const cOffset = 6.8; // 四隅（GO, 刑務所, 駐車場, GoToJail）の中心位置(%)
-    const step = 8.08;   // 各通常マスの幾何学的正確な間隔(%)
+    const leftEdge = 7.1;   // 左列マスの中心（%）
+    const rightEdge = 92.9; // 右列マスの中心（%）
+    const topEdge = 7.1;    // 上行マスの中心（%）
+    const bottomEdge = 92.9;// 下行マスの中心（%）
 
-    if (id === 0) return { left: 100 - cOffset, top: 100 - cOffset }; // 右下 (GO)
+    const stepX = (rightEdge - leftEdge) / 10; // 横方向の1マス幅 (8.58%)
+    const stepY = (bottomEdge - topEdge) / 10; // 縦方向の1マス幅 (8.58%)
+
+    // 四隅コーナーマス
+    if (id === 0)  return { left: rightEdge, top: bottomEdge }; // GO (右下)
+    if (id === 10) return { left: leftEdge,  top: bottomEdge }; // 刑務所 (左下)
+    if (id === 20) return { left: leftEdge,  top: topEdge };    // 無料駐車場 (左上)
+    if (id === 30) return { left: rightEdge, top: topEdge };    // Go to Jail (右上)
 
     // 下辺 (1〜9): 右から左へ
     if (id >= 1 && id <= 9) {
-        return { left: (100 - cOffset) - (id * step), top: 100 - cOffset };
+        return { left: rightEdge - (id * stepX), top: bottomEdge };
     }
-    // 左下角 (10): 刑務所
-    if (id === 10) return { left: cOffset, top: 100 - cOffset };
 
     // 左辺 (11〜19): 下から上へ
     if (id >= 11 && id <= 19) {
-        return { left: cOffset, top: (100 - cOffset) - ((id - 10) * step) };
+        return { left: leftEdge, top: bottomEdge - ((id - 10) * stepY) };
     }
-    // 左上角 (20): 無料駐車場
-    if (id === 20) return { left: cOffset, top: cOffset };
 
     // 上辺 (21〜29): 左から右へ
     if (id >= 21 && id <= 29) {
-        return { left: cOffset + ((id - 20) * step), top: cOffset };
+        return { left: leftEdge + ((id - 20) * stepX), top: topEdge };
     }
-    // 右上角 (30): 刑務所へ行け
-    if (id === 30) return { left: 100 - cOffset, top: cOffset };
 
     // 右辺 (31〜39): 上から下へ
     if (id >= 31 && id <= 39) {
-        return { left: 100 - cOffset, top: cOffset + ((id - 30) * step) };
+        return { left: rightEdge, top: topEdge + ((id - 30) * stepY) };
     }
 }
 
