@@ -40,12 +40,8 @@
             font-size: 26px;
         }
 
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
+        .screen { display: none; }
+        .screen.active { display: block; }
 
         /* --- 1. 条件設定画面 --- */
         .config-card {
@@ -58,168 +54,74 @@
             box-sizing: border-box;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #444;
-        }
-
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; }
         .form-group select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; border-radius: 6px;
+            border: 1px solid #ccc; font-size: 15px; box-sizing: border-box;
         }
 
-        .form-help {
-            font-size: 12px;
-            color: #777;
-            margin-top: 4px;
-        }
+        .form-help { font-size: 12px; color: #777; margin-top: 4px; }
 
         .btn-start {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--btn-green);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
+            width: 100%; padding: 12px; background-color: var(--btn-green);
+            color: white; font-size: 16px; font-weight: bold; border: none;
+            border-radius: 6px; cursor: pointer; transition: background 0.2s;
         }
 
-        .btn-start:hover {
-            background-color: var(--btn-green-hover);
-        }
+        .btn-start:hover { background-color: var(--btn-green-hover); }
 
-        /* --- 2. 結果画面ヘッダー --- */
+        /* --- 2. 結果画面 --- */
         .header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            background: #f8f9fa;
-            padding: 12px 16px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; background: #f8f9fa; padding: 12px 16px;
+            border-radius: 6px; border: 1px solid var(--border-color);
         }
 
-        .info-summary {
-            font-size: 14px;
-            color: #555;
-        }
+        .info-summary { font-size: 14px; color: #555; }
 
         .btn-back {
-            padding: 8px 16px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            white-space: nowrap;
+            padding: 8px 16px; background-color: #6c757d; color: white;
+            border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;
         }
 
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
+        .btn-back:hover { background-color: #5a6268; }
 
-        /* プログレスバー */
         .progress-box {
-            width: 100%;
-            background-color: #e9ecef;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            height: 22px;
-            position: relative;
+            width: 100%; background-color: #e9ecef; border-radius: 6px;
+            overflow: hidden; margin-bottom: 20px; height: 22px; position: relative;
         }
 
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--accent-color);
-            transition: width 0.1s;
-        }
-
+        .progress-bar { height: 100%; width: 0%; background-color: var(--accent-color); transition: width 0.1s; }
         .progress-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 2px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #222;
+            position: absolute; width: 100%; text-align: center;
+            top: 2px; font-size: 12px; font-weight: bold; color: #222;
         }
 
-        /* ボード画像コンテナ */
         .board-view-card {
-            margin-bottom: 24px;
-            background: #fafafa;
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 8px;
+            margin-bottom: 24px; background: #fafafa;
+            border: 1px solid var(--border-color); padding: 16px; border-radius: 8px;
         }
 
-        .board-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            text-align: center;
-        }
+        .board-title { font-size: 15px; font-weight: bold; color: var(--primary-color); margin-bottom: 12px; text-align: center; }
 
         .board-container {
-            position: relative;
-            width: 100%;
-            max-width: 720px;
-            margin: 0 auto;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            background: #fff;
+            position: relative; width: 100%; max-width: 720px; margin: 0 auto;
+            border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff;
         }
 
-        .board-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+        .board-container img { width: 100%; height: auto; display: block; }
 
-        /* 番号ピン */
         .board-pin {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            margin-left: -12px;
-            margin-top: -12px;
-            font-size: 11px;
-            font-weight: 800;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #000000;
-            box-shadow: 0 0 0 1.5px #ffffff, 0 3px 8px rgba(0,0,0,0.6);
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-            z-index: 5;
-            box-sizing: border-box;
+            position: absolute; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px;
+            font-size: 11px; font-weight: 800; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; border: 2px solid #000000;
+            box-shadow: 0 0 0 1.5px #ffffff, 0 3px 8px rgba(0,0,0,0.6); cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s; z-index: 5; box-sizing: border-box;
         }
 
         .board-pin:hover {
-            transform: scale(1.4);
-            box-shadow: 0 0 0 2px #ffffff, 0 5px 12px rgba(0,0,0,0.9);
-            z-index: 30;
+            transform: scale(1.4); box-shadow: 0 0 0 2px #ffffff, 0 5px 12px rgba(0,0,0,0.9); z-index: 30;
         }
 
         .pin-brown       { background-color: #5c2c0e; color: #ffffff; }
@@ -234,120 +136,46 @@
         .pin-utility     { background-color: #4a5568; color: #ffffff; }
         .pin-special     { background-color: #ffffff; color: #000000; border-color: #000000; }
 
-        /* グラフボックス */
         .chart-box {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-            background: #fafafa;
-            box-sizing: border-box;
+            width: 100%; border: 1px solid var(--border-color); border-radius: 6px;
+            padding: 12px; background: #fafafa; box-sizing: border-box;
         }
 
-        .chart-wrapper {
-            width: 100%;
-        }
+        .chart-wrapper { width: 100%; }
+        .chart-section-title { display: none; font-size: 12px; font-weight: bold; color: #555; margin: 6px 0 2px 4px; }
 
-        .chart-section-title {
-            display: none;
-            font-size: 12px;
-            font-weight: bold;
-            color: #555;
-            margin: 6px 0 2px 4px;
-        }
+        canvas { display: block; margin: 0 auto; max-width: 100%; height: auto; cursor: pointer; }
 
-        canvas {
-            display: block;
-            margin: 0 auto;
-            max-width: 100%;
-            height: auto;
-            cursor: pointer;
-        }
-
-        /* テーブルツールバー */
         .table-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            gap: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 24px; margin-bottom: 12px; gap: 10px;
         }
 
-        .table-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
+        .table-title { font-size: 18px; font-weight: bold; color: var(--primary-color); }
 
         .btn-sort {
-            padding: 6px 14px;
-            background-color: #34495e;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            font-weight: bold;
-            white-space: nowrap;
+            padding: 6px 14px; background-color: #34495e; color: white; border: none;
+            border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; white-space: nowrap;
         }
 
-        .btn-sort:hover {
-            background-color: #2c3e50;
-        }
+        .btn-sort:hover { background-color: #2c3e50; }
 
-        /* テーブル */
         .table-box {
-            max-height: 500px;
-            overflow-y: auto;
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            max-height: 500px; overflow-y: auto; overflow-x: auto;
+            border: 1px solid var(--border-color); border-radius: 6px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            text-align: left;
-            min-width: 500px;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; min-width: 500px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        th { background: #e9ecef; position: sticky; top: 0; z-index: 10; font-weight: 600; }
 
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #e9ecef;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            font-weight: 600;
-        }
-
-        tr.clickable-row {
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        tr.clickable-row:hover {
-            background-color: #e2e8f0 !important;
-        }
-
-        .jail-row {
-            background-color: #fff3bf !important;
-            font-weight: bold;
-        }
+        tr.clickable-row { cursor: pointer; transition: background 0.15s; }
+        tr.clickable-row:hover { background-color: #e2e8f0 !important; }
+        .jail-row { background-color: #fff3bf !important; font-weight: bold; }
 
         .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #fff;
-            font-weight: bold;
-            white-space: nowrap;
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; color: #fff; font-weight: bold; white-space: nowrap;
         }
 
         .bg-brown { background-color: #8B4513; }
@@ -362,205 +190,102 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
 
-        /* サイコロ確率セクション */
         .dice-section {
-            margin-top: 60px;
-            padding: 24px;
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            margin-top: 60px; padding: 24px; background: #f8f9fa;
+            border: 1px solid var(--border-color); border-radius: 8px;
         }
 
         .dice-section-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 16px; font-weight: bold; color: var(--primary-color);
+            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
         }
 
-        .dice-table-container {
-            overflow-x: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            background: #fff;
-        }
+        .dice-table-container { overflow-x: auto; border: 1px solid #e0e0e0; border-radius: 6px; background: #fff; }
+        .dice-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; min-width: 550px; }
+        .dice-table th { background: #edf2f7; color: #2d3748; padding: 8px 10px; font-weight: bold; border-bottom: 2px solid #cbd5e0; }
+        .dice-table td { padding: 8px 10px; border-bottom: 1px solid #edf2f7; }
+        .dice-table tr.highlight-row { background-color: #ebf8ff; font-weight: bold; }
 
-        .dice-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            text-align: center;
-            min-width: 550px;
-        }
-
-        .dice-table th {
-            background: #edf2f7;
-            color: #2d3748;
-            padding: 8px 10px;
-            font-weight: bold;
-            border-bottom: 2px solid #cbd5e0;
-        }
-
-        .dice-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #edf2f7;
-        }
-
-        .dice-table tr.highlight-row {
-            background-color: #ebf8ff;
-            font-weight: bold;
-        }
-
-        .prob-bar-container {
-            width: 100%;
-            background-color: #edf2f7;
-            border-radius: 3px;
-            height: 10px;
-            overflow: hidden;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .prob-bar-fill {
-            height: 100%;
-            background-color: #3182ce;
-        }
+        .prob-bar-container { width: 100%; background-color: #edf2f7; border-radius: 3px; height: 10px; overflow: hidden; display: inline-block; vertical-align: middle; }
+        .prob-bar-fill { height: 100%; background-color: #3182ce; }
 
         .dice-note-box {
-            margin-top: 12px;
-            padding: 10px 14px;
-            background: #fffaf0;
-            border-left: 4px solid #dd6b20;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #7b341e;
-            line-height: 1.5;
+            margin-top: 12px; padding: 10px 14px; background: #fffaf0;
+            border-left: 4px solid #dd6b20; border-radius: 4px; font-size: 12px; color: #7b341e; line-height: 1.5;
         }
 
-        /* --- 現在の物件状況マネージャー（最下部） --- */
         .game-state-section {
-            margin-top: 60px;
-            padding: 24px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-top: 60px; padding: 24px; background: #ffffff;
+            border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .game-state-header {
-            margin-bottom: 16px;
-        }
+        .game-state-header { margin-bottom: 16px; }
+        .game-state-title { font-size: 18px; font-weight: bold; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+        .game-state-subtitle { font-size: 12px; color: #666; margin-top: 4px; }
 
-        .game-state-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
+        .state-select:disabled { background: #f1f3f5; color: #aaa; cursor: not-allowed; }
 
-        .game-state-subtitle {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
+        .income-positive { color: #27ae60; font-weight: bold; }
+        .income-negative { color: #e74c3c; font-weight: bold; }
+        .income-zero { color: #888; }
 
-        .state-select {
-            padding: 4px 6px;
-            font-size: 12px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-
-        .state-select:disabled {
-            background: #f1f3f5;
-            color: #aaa;
-            cursor: not-allowed;
-        }
-
-        /* 赤字・緑字スタイル */
-        .income-positive {
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        .income-negative {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        .income-zero {
-            color: #888;
-        }
-
-        /* モーダルダイアログ */
+        /* モーダル */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal-card {
-            background: #fff;
-            width: 92%;
-            max-width: 650px;
-            max-height: 88vh;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            overflow-y: auto;
-            position: relative;
-            box-sizing: border-box;
+            background: #fff; width: 92%; max-width: 650px; max-height: 88vh;
+            border-radius: 10px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow-y: auto; position: relative; box-sizing: border-box;
         }
 
         .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            font-weight: bold;
-            color: #888;
-            cursor: pointer;
+            position: absolute; top: 14px; right: 14px; background: none; border: none;
+            font-size: 24px; font-weight: bold; color: #888; cursor: pointer;
         }
 
-        .modal-close:hover {
-            color: #333;
+        .modal-close:hover { color: #333; }
+
+        .detail-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .detail-table th, .detail-table td { padding: 8px 10px; border: 1px solid #ddd; font-size: 13px; }
+        .detail-table th { background: #f1f3f5; text-align: left; }
+
+        .card-list { list-style: none; padding: 0; margin: 12px 0 0 0; }
+        .card-list li {
+            padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 13px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-list li:last-child { border-bottom: none; }
+
+        .move-tag {
+            background: #e74c3c; color: white; font-size: 10px; padding: 2px 6px;
+            border-radius: 3px; font-weight: bold; white-space: nowrap;
         }
 
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
+        .history-box {
+            margin-top: 20px; background: #f8f9fa; border: 1px solid #e0e0e0;
+            padding: 14px; border-radius: 8px;
         }
 
-        .detail-table th, .detail-table td {
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            font-size: 13px;
+        .tab-buttons { display: flex; gap: 6px; margin-bottom: 10px; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; }
+        .tab-btn {
+            padding: 6px 12px; font-size: 12px; font-weight: bold; background: #e2e8f0;
+            border: none; border-radius: 4px; cursor: pointer; color: #4a5568; transition: all 0.2s;
         }
+        .tab-btn.active { background: #3182ce; color: #ffffff; }
 
-        .detail-table th {
-            background: #f1f3f5;
-            text-align: left;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .history-canvas-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; margin-bottom: 10px; }
+        .history-insight { display: flex; gap: 8px; background: #edf2f7; padding: 8px 10px; border-radius: 6px; font-size: 11px; color: #4a5568; flex-wrap: wrap; }
+        .insight-item { flex: 1; min-width: 110px; }
+        .insight-item strong { color: #2d3748; font-size: 12px; }
 
         @media (max-width: 768px) {
             body { padding: 10px 6px; }
@@ -581,7 +306,7 @@
 <div class="container">
     <h1>モノポリー（US版）確率シミュレーター</h1>
 
-    <!-- 1. 条件設定画面（プレイ人数設定付き） -->
+    <!-- 1. 条件設定画面 -->
     <div id="configScreen" class="screen active">
         <div class="config-card">
             <h2 style="margin-top: 0; font-size: 18px; color: #333;">シミュレーション条件の設定</h2>
@@ -630,13 +355,11 @@
             <button class="btn-back" onclick="showConfigScreen()">条件を変更する</button>
         </div>
 
-        <!-- プログレスバー -->
         <div class="progress-box">
             <div class="progress-bar" id="progressBar"></div>
             <div class="progress-text" id="progressText">計算中...</div>
         </div>
 
-        <!-- ボード画像＆カラーマッピング対比エリア -->
         <div class="board-view-card">
             <div class="board-title">盤面マップ対比ガイド（黒枠丸バッジの色は各グループに対応 / クリックで詳細）</div>
             <div class="board-container">
@@ -645,7 +368,6 @@
             </div>
         </div>
 
-        <!-- グラフ -->
         <div class="chart-box">
             <div class="chart-wrapper" id="singleChartWrapper">
                 <canvas id="customChart" width="1000" height="320"></canvas>
@@ -658,13 +380,11 @@
             </div>
         </div>
 
-        <!-- テーブルツールバー -->
         <div class="table-toolbar">
             <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると詳細情報を表示）</small></div>
             <button class="btn-sort" id="sortBtn" onclick="toggleSort()">着地確率が高い順に並び替え</button>
         </div>
 
-        <!-- 表のデータテーブル -->
         <div class="table-box">
             <table>
                 <thead>
@@ -681,7 +401,6 @@
             </table>
         </div>
 
-        <!-- サイコロ2個振った時の確率偏差・理論値表（文面完全復元済み） -->
         <div class="dice-section">
             <div class="dice-section-title">🎲 2個のサイコロを振った時の出目・確率分布（理論値）</div>
             <div class="dice-table-container">
@@ -717,7 +436,6 @@
                 </table>
             </div>
 
-            <!-- 要求①: 元の文面（(1/6)³ = 1/216 (約0.46%)）に完全復元 -->
             <div class="dice-note-box">
                 <strong>💡 モノポリーにおけるゾロ目（ダブルス）の確率:</strong><br>
                 任意のゾロ目（1-1, 2-2, ..., 6-6）が出る確率は <strong>6/36 ＝ 1/6 (約16.67%)</strong> です。<br>
@@ -725,12 +443,11 @@
             </div>
         </div>
 
-        <!-- プレイ中の「現在の物件状況」マネージャー -->
         <div class="game-state-section">
             <div class="game-state-header">
                 <div>
                     <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
-                    <div class="game-state-subtitle" id="gameStateSubtitle">※所有者（自分/敵）や建設状況を選ぶと、敵所有時のマイナス（赤字）や特殊マス（GO/税金/カード）を含めた1ターン期待収支が自動算出されます。</div>
+                    <div class="game-state-subtitle" id="gameStateSubtitle">※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。</div>
                 </div>
             </div>
 
@@ -756,7 +473,7 @@
     </div>
 </div>
 
-<!-- モーダルポップアップ -->
+<!-- モーダルダイアログ -->
 <div class="modal-overlay" id="detailModal" onclick="closeModalOnOverlay(event)">
     <div class="modal-card">
         <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -765,10 +482,49 @@
 </div>
 
 <script>
-// 全40マスのメタデータと詳細データ情報
+// チャンスカード全16枚詳細情報（移動効果つき）
+const chanceCardsInfo = [
+    { text: "GOへ進む ($200受取)", move: true },
+    { text: "イリノイ通りへ進む", move: true },
+    { text: "セント・チャールズ・プレイスへ進む", move: true },
+    { text: "最も近い会社へ進む (倍額支払い)", move: true },
+    { text: "最も近い鉄道へ進む (倍額支払い・2枚入)", move: true },
+    { text: "リーディング鉄道へ進む", move: true },
+    { text: "ボードウォークへ進む", move: true },
+    { text: "3マス戻る", move: true },
+    { text: "刑務所へ行く", move: true },
+    { text: "釈放カード ( Get Out of Jail Free )", move: false },
+    { text: "建物の修理費を支払う (家1軒$25/ホテル$100)", move: false },
+    { text: "貧民税 $15 を支払う", move: false },
+    { text: "取締役会長に選出 (各人へ$50支払)", move: false },
+    { text: "建築ローン満期 ($150受取)", move: false },
+    { text: "クロスワード大会で勝利 ($10受取)", move: false }
+];
+
+// 共同基金カード全16枚詳細情報（移動効果つき）
+const communityCardsInfo = [
+    { text: "GOへ進む ($200受取)", move: true },
+    { text: "刑務所へ行く", move: true },
+    { text: "釈放カード ( Get Out of Jail Free )", move: false },
+    { text: "銀行の計算違い ($200受取)", move: false },
+    { text: "診察料支払い ($50支払)", move: false },
+    { text: "株式売却益 ($50受取)", move: false },
+    { text: "オペラ観賞の夜 (各人から$50受取)", move: false },
+    { text: "休日基金満期 ($100受取)", move: false },
+    { text: "所得税還付 ($20受取)", move: false },
+    { text: "誕生日のお祝い (各人から$10受取)", move: false },
+    { text: "生命保険満期 ($100受取)", move: false },
+    { text: "入院費支払い ($100支払)", move: false },
+    { text: "授業料支払い ($50支払)", move: false },
+    { text: "コンサルタント料 ($25受取)", move: false },
+    { text: "道路補修費の査定 (家1軒$40/ホテル$115)", move: false },
+    { text: "美人コンテスト第2位 ($10受取)", move: false }
+];
+
+// 全40マスのメタデータと詳細データ情報（完全復元）
 const boardMeta = [
     { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", baseCashEffect: 200, desc: "通過・止まった際に給料 $200 を受け取ります。" },
+      type: "SPECIAL", baseCashEffect: 200, desc: "通過時に給料 $200 を受け取ります。直接止まった場合も $200 を獲得します。" },
     { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [2, 10, 30, 90, 160, 250] },
     { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -788,7 +544,7 @@ const boardMeta = [
     { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue", pinClass: "pin-light-blue",
       type: "PROPERTY", cost: 120, houseCost: 50, mortgage: 60, rent: [8, 40, 100, 300, 450, 600] },
     { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "刑務所", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", desc: "見学中または収監マスです。" },
+      type: "SPECIAL", desc: "通常の移動で止まった場合は「見学中（Just Visiting）」です。刑務所送りになった場合は収監され、ゾロ目を出すか$50払って脱出します。" },
     { id: 11, jp: "セント・チャールズ・プレイス", en: "St. Charles Place", group: "ライトパープル", badge: "bg-purple", pinClass: "pin-purple",
       type: "PROPERTY", cost: 140, houseCost: 100, mortgage: 70, rent: [10, 50, 150, 450, 625, 750] },
     { id: 12, jp: "電力会社", en: "Electric Company", group: "会社", badge: "bg-utility", pinClass: "pin-utility",
@@ -828,7 +584,7 @@ const boardMeta = [
     { id: 29, jp: "マービン・ガーデンズ", en: "Marvin Gardens", group: "イエロー", badge: "bg-yellow", pinClass: "pin-yellow",
       type: "PROPERTY", cost: 280, houseCost: 150, mortgage: 140, rent: [24, 120, 360, 850, 1025, 1200] },
     { id: 30, jp: "刑務所へ行け", en: "Go to Jail", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", desc: "止まった瞬間に即座に「刑務所」へ転送されます。" },
+      type: "SPECIAL", desc: "止まった瞬間に即座に「刑務所（マス10）」へ転送されます。GOマスを通過しても$200は受け取れません。" },
     { id: 31, jp: "パシフィック通り", en: "Pacific Ave", group: "グリーン", badge: "bg-green", pinClass: "pin-green",
       type: "PROPERTY", cost: 300, houseCost: 200, mortgage: 150, rent: [26, 130, 390, 900, 1100, 1275] },
     { id: 32, jp: "ノースカロライナ通り", en: "North Carolina Ave", group: "グリーン", badge: "bg-green", pinClass: "pin-green",
@@ -862,7 +618,7 @@ let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 let currentTurns = 0;
 let targetTurns = 1000000;
 let selectedStrategy = "EARLY_EXIT";
-let playerCount = 4; // デフォルト4人
+let playerCount = 4;
 let isRunning = false;
 let animFrameId = null;
 let isSortedByProb = false;
@@ -1073,25 +829,35 @@ function toggleSort() {
     updateUI();
 }
 
-// 要求②: プレイ人数（playerCount）に応じたカード平均収支動的算出
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    if (tabName === 'total') {
+        document.getElementById('btnTabTotal').classList.add('active');
+        document.getElementById('tabTotal').classList.add('active');
+    } else {
+        document.getElementById('btnTabEarly').classList.add('active');
+        document.getElementById('tabEarly').classList.add('active');
+    }
+}
+
 function getBaseCashValue(id) {
     let item = boardMeta[id];
     let state = propertyGameState[id];
 
-    // 特殊マス（チャンス・共同基金・GO・税金）の動的金額算出
     if (item.type === "CHANCE") {
         let opponents = playerCount - 1;
-        let totalVal = 200 + 150 + 10 - 15 - (50 * opponents); // 取締役会長: 各敵人へ $50 支払い
+        let totalVal = 200 + 150 + 10 - 15 - (50 * opponents);
         return totalVal / 16;
     }
     if (item.type === "COMMUNITY") {
         let opponents = playerCount - 1;
-        let totalVal = 200 + 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents); // オペラ+$50/人, 誕生日+$10/人
+        let totalVal = 200 + 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents);
         return totalVal / 16;
     }
     if (item.baseCashEffect !== undefined) return item.baseCashEffect;
 
-    // 通常物件マス
     if (state.ownerType === "NONE") return 0;
 
     if (item.type === "PROPERTY") {
@@ -1108,12 +874,14 @@ function getBaseCashValue(id) {
     return 0;
 }
 
+// モーダルポップアップ詳細表示（全解説文章・カード一覧・スパークライングラフ完全復元）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
 
     let currentProb = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
     let currentProbPct = (currentProb * 100).toFixed(3);
+    let state = propertyGameState[id];
 
     let html = `
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -1130,6 +898,14 @@ function showDetail(id) {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
 
+        let isActiveRow = (typeIndex) => {
+            if (state.ownerType === "NONE") return false;
+            if (typeIndex === 0 && state.houses === 0 && state.monopolyType === "SINGLE") return true;
+            if (typeIndex === 1 && state.houses === 0 && state.monopolyType === "COLOR_MONOPOLY") return true;
+            if (typeIndex >= 2 && state.houses === (typeIndex - 1)) return true;
+            return false;
+        };
+
         html += `
             <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
@@ -1137,28 +913,181 @@ function showDetail(id) {
                 <tr><th>抵当受取額</th><td>$${item.mortgage} (解除費: $${Math.round(item.mortgage * 1.1)})</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入</h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入 <small style="font-weight: normal; color: #27ae60;">(緑背景＝現在のプレイ状況)</small></h4>
             <table class="detail-table">
                 <thead>
                     <tr><th>所有・建設状態</th><th style="width: 100px;">家賃 ($)</th><th style="width: 170px;">1ターンあたり期待収入</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td></tr>
-                    <tr><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
-                    <tr><td>家 1 軒</td><td>$${r[1]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td></tr>
-                    <tr><td>家 2 軒</td><td>$${r[2]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td></tr>
-                    <tr><td>家 3 軒</td><td>$${r[3]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td></tr>
-                    <tr><td>家 4 軒</td><td>$${r[4]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td></tr>
-                    <tr><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(0) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(1) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(2) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 1 軒</td><td>$${r[1]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(3) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 2 軒</td><td>$${r[2]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(4) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 3 軒</td><td>$${r[3]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(5) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 4 軒</td><td>$${r[4]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td></tr>
+                    <tr style="${isActiveRow(6) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
+    } else if (item.type === "RAILROAD") {
+        let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
+        html += `
+            <table class="detail-table" style="margin-bottom: 16px;">
+                <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
+                <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
+            </table>
+
+            <h4 style="margin: 16px 0 8px 0; color: #333;">鉄道の所有数別家賃と1ターンあたり期待収入</h4>
+            <table class="detail-table">
+                <thead><tr><th>所有数</th><th>家賃 ($)</th><th>1ターンあたり期待収入</th></tr></thead>
+                <tbody>
+                    <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
+                    <tr><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
+                    <tr><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
+                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                </tbody>
+            </table>
+        `;
+    } else if (item.type === "UTILITY") {
+        let calcExp = (multiplier) => (multiplier * 7 * currentProb).toFixed(2);
+        html += `
+            <table class="detail-table" style="margin-bottom: 16px;">
+                <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
+                <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
+            </table>
+
+            <h4 style="margin: 16px 0 8px 0; color: #333;">公共事業の所有数別家賃と平均期待収入 (ダイス目平均 7 想定)</h4>
+            <table class="detail-table">
+                <thead><tr><th>所有数</th><th>家賃ルール</th><th>1ターンあたり期待収入 (平均)</th></tr></thead>
+                <tbody>
+                    <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
+                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                </tbody>
+            </table>
+        `;
+    } else if (item.type === "CHANCE") {
+        html += `
+            <h4 style="margin: 12px 0 8px 0;">チャンスカード 一覧（全16枚）</h4>
+            <ul class="card-list">
+                ${chanceCardsInfo.map(c => `<li>${c.move ? '<span class="move-tag">移動</span>' : ''} ${c.text}</li>`).join('')}
+            </ul>
+        `;
+    } else if (item.type === "COMMUNITY") {
+        html += `
+            <h4 style="margin: 12px 0 8px 0;">共同基金カード 一覧（全16枚）</h4>
+            <ul class="card-list">
+                ${communityCardsInfo.map(c => `<li>${c.move ? '<span class="move-tag">移動</span>' : ''} ${c.text}</li>`).join('')}
+            </ul>
+        `;
     } else {
-        html += `<p style="line-height: 1.6; font-size: 13px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc || '特殊マスです。'}</p>`;
+        html += `<p style="line-height: 1.6; font-size: 13px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc}</p>`;
     }
+
+    // 全体進行 vs 初期100ターン 確率推移グラフタブ復元
+    let totalCountsArr = visitHistory[item.id];
+    let stepInterval = targetTurns / 10;
+    let totalProbArr = totalCountsArr.map((cnt, i) => currentTurns > 0 ? (cnt / (stepInterval * (i + 1))) * 100 : 0);
+    let earlyCountsArr = earlyHistory[item.id];
+    let earlyProbArr = earlyCountsArr.map((cnt, i) => (cnt / ((i + 1) * 10)) * 100);
+
+    let finalTotalProb = totalProbArr[9] || (currentTurns > 0 ? (visitCounts[item.id] / currentTurns * 100) : 0);
+    let early100Prob = earlyProbArr[9] || 0;
+
+    html += `
+        <div class="history-box">
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="btnTabTotal" onclick="switchTab('total')">全体進行（収束プロセス）</button>
+                <button class="tab-btn" id="btnTabEarly" onclick="switchTab('early')">初期100ターン（序盤遷移）</button>
+            </div>
+
+            <div class="tab-content active" id="tabTotal">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 13px; font-weight: bold; color: #2c3e50;">長期目標ターンへの確率収束過程</span>
+                    <span style="font-size: 12px; color: #3498db; font-weight: bold;">確定確率: ${finalTotalProb.toFixed(3)}%</span>
+                </div>
+                <div class="history-canvas-box"><canvas id="sparklineTotalCanvas" width="500" height="150"></canvas></div>
+                <div class="history-insight">
+                    <div class="insight-item">序盤(10%時点): <strong>${totalProbArr[0].toFixed(3)}%</strong></div>
+                    <div class="insight-item">最終確定(100%): <strong>${finalTotalProb.toFixed(3)}%</strong></div>
+                    <div class="insight-item">収束ブレ幅: <strong>${(finalTotalProb - totalProbArr[0]) >= 0 ? '+' : ''}${(finalTotalProb - totalProbArr[0]).toFixed(3)}%</strong></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tabEarly">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 13px; font-weight: bold; color: #2c3e50;">ゲーム開始1〜100ターンの動的変化</span>
+                    <span style="font-size: 12px; color: #e67e22; font-weight: bold;">100ターン目確率: ${early100Prob.toFixed(2)}%</span>
+                </div>
+                <div class="history-canvas-box"><canvas id="sparklineEarlyCanvas" width="500" height="150"></canvas></div>
+                <div class="history-insight">
+                    <div class="insight-item">10ターン目: <strong>${earlyProbArr[0].toFixed(2)}%</strong></div>
+                    <div class="insight-item">50ターン目: <strong>${earlyProbArr[4].toFixed(2)}%</strong></div>
+                    <div class="insight-item">100ターン目: <strong>${early100Prob.toFixed(2)}%</strong></div>
+                </div>
+            </div>
+        </div>
+    `;
 
     document.getElementById("modalContent").innerHTML = html;
     document.getElementById("detailModal").classList.add("active");
+
+    setTimeout(() => {
+        drawSparkline("sparklineTotalCanvas", totalProbArr, ["10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"], "#3182ce");
+        drawSparkline("sparklineEarlyCanvas", earlyProbArr, ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100T"], "#dd6b20");
+    }, 50);
+}
+
+function drawSparkline(canvasId, probArr, labels, lineColor) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    const pad = { top: 20, right: 30, bottom: 25, left: 45 };
+    const chartW = w - pad.left - pad.right, chartH = h - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, w, h);
+    let maxP = Math.max(...probArr, 3.5), minP = Math.min(...probArr, 0);
+    let yMax = Math.ceil(maxP * 1.1 * 10) / 10, yMin = Math.max(0, Math.floor(minP * 0.9 * 10) / 10);
+
+    ctx.strokeStyle = "#edf2f7"; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        let val = yMin + (yMax - yMin) * (i / 4);
+        let y = pad.top + chartH - (i / 4) * chartH;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
+        ctx.fillStyle = "#a0aec0"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+        ctx.fillText(val.toFixed(2) + "%", pad.left - 6, y + 3);
+    }
+
+    if (2.5 >= yMin && 2.5 <= yMax) {
+        let avgY = pad.top + chartH - ((2.5 - yMin) / (yMax - yMin || 1)) * chartH;
+        ctx.strokeStyle = "#e53e3e"; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(pad.left, avgY); ctx.lineTo(w - pad.right, avgY); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = "#e53e3e"; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("全体平均 (2.5%)", pad.left + 5, avgY - 3);
+    }
+
+    labels.forEach((lbl, i) => {
+        let x = pad.left + i * (chartW / 9);
+        ctx.fillStyle = "#718096"; ctx.font = "9px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(lbl, x, h - 8);
+    });
+
+    ctx.strokeStyle = lineColor; ctx.lineWidth = 2.5; ctx.beginPath();
+    probArr.forEach((val, i) => {
+        let x = pad.left + i * (chartW / 9);
+        let ratio = (val - yMin) / (yMax - yMin || 1);
+        let y = pad.top + chartH - ratio * chartH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    probArr.forEach((val, i) => {
+        let x = pad.left + i * (chartW / 9);
+        let ratio = (val - yMin) / (yMax - yMin || 1);
+        let y = pad.top + chartH - ratio * chartH;
+        ctx.fillStyle = lineColor; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+    });
 }
 
 function closeModal() { document.getElementById("detailModal").classList.remove("active"); }
