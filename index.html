@@ -230,6 +230,35 @@
         .income-negative { color: #e74c3c; font-weight: bold; }
         .income-zero { color: #888; }
 
+        /* サマリーダッシュボード */
+        .summary-dashboard {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .summary-card-title {
+            font-size: 12px;
+            color: #718096;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .summary-card-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
         /* モーダル */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -467,6 +496,26 @@
                     </thead>
                     <tbody id="gameStateTableBody"></tbody>
                 </table>
+            </div>
+
+            <!-- 要求③: 「現在の物件状況」下の要約ダッシュボード追加 -->
+            <div class="summary-dashboard">
+                <div class="summary-card">
+                    <div class="summary-card-title">🏠 現在の自分の物件数</div>
+                    <div class="summary-card-value" id="summarySelfProperties">0 個</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">👑 現在独占しているカラーグループ</div>
+                    <div class="summary-card-value" id="summaryMonopolies" style="font-size: 15px;">なし</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">💰 現在の1ターン当たりの期待収支</div>
+                    <div class="summary-card-value" id="summaryTotalExpected">$0.00 / ターン</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">🧱 残り家 / ホテルの数 (上限: 家32/ホテル12)</div>
+                    <div class="summary-card-value" id="summaryRemainingBuildings" style="font-size: 15px;">家 32 軒 / ホテル 12 軒</div>
+                </div>
             </div>
         </div>
 
@@ -874,7 +923,6 @@ function getBaseCashValue(id) {
     return 0;
 }
 
-// モーダルポップアップ詳細表示（未所有時のハイライト非表示修正済み）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
@@ -898,7 +946,6 @@ function showDetail(id) {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
 
-        // 未所有（NONE）の場合は常にハイライトしないように修正
         let isActiveRow = (typeIndex) => {
             if (state.ownerType === "NONE") return false;
             if (typeIndex === 0 && state.houses === 0 && state.monopolyType === "SINGLE") return true;
@@ -1143,12 +1190,20 @@ function updateUI() {
         tbody.appendChild(tr);
     });
 
+    // 集計用変数
+    let selfPropsCount = 0;
+    let monopoliesSet = new Set();
+    let totalNetExpected = 0;
+    let totalHousesUsed = 0;
+    let totalHotelsUsed = 0;
+
     // 2. 「現在の物件状況」テーブル描画
     let gsTbody = document.getElementById("gameStateTableBody");
     if (gsTbody) {
         gsTbody.innerHTML = "";
         boardMeta.forEach(item => {
             let tr = document.createElement("tr");
+            tr.classList.add("clickable-row"); // ①クリック可能にするクラス追加
             let state = propertyGameState[item.id];
             let prob = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
             let baseCash = getBaseCashValue(item.id);
@@ -1160,7 +1215,7 @@ function updateUI() {
 
             if (["PROPERTY", "RAILROAD", "UTILITY"].includes(item.type)) {
                 ownerTypeHTML = `
-                    <select class="state-select" onchange="updatePropertyState(${item.id}, 'ownerType', this.value)">
+                    <select class="state-select" onclick="event.stopPropagation()" onchange="updatePropertyState(${item.id}, 'ownerType', this.value)">
                         <option value="NONE" ${state.ownerType === 'NONE' ? 'selected' : ''}>未所有</option>
                         <option value="SELF" ${state.ownerType === 'SELF' ? 'selected' : ''}>自分所有</option>
                         <option value="ENEMY" ${state.ownerType === 'ENEMY' ? 'selected' : ''}>敵所有</option>
@@ -1168,7 +1223,7 @@ function updateUI() {
                 `;
 
                 monopolyTypeHTML = `
-                    <select class="state-select" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'monopolyType', this.value)">
+                    <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'monopolyType', this.value)">
                         <option value="SINGLE" ${state.monopolyType === 'SINGLE' ? 'selected' : ''}>単独所有</option>
                         <option value="COLOR_MONOPOLY" ${state.monopolyType === 'COLOR_MONOPOLY' ? 'selected' : ''}>グループ独占</option>
                     </select>
@@ -1178,7 +1233,7 @@ function updateUI() {
             if (item.type === "PROPERTY") {
                 let isHouseDisabled = state.ownerType === 'NONE' || state.monopolyType !== 'COLOR_MONOPOLY';
                 houseSelectHTML = `
-                    <select class="state-select" ${isHouseDisabled ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'houses', parseInt(this.value))">
+                    <select class="state-select" onclick="event.stopPropagation()" ${isHouseDisabled ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'houses', parseInt(this.value))">
                         <option value="0" ${state.houses === 0 ? 'selected' : ''}>更地</option>
                         <option value="1" ${state.houses === 1 ? 'selected' : ''}>家 1 軒</option>
                         <option value="2" ${state.houses === 2 ? 'selected' : ''}>家 2 軒</option>
@@ -1190,17 +1245,22 @@ function updateUI() {
             }
 
             let calcExpected = baseCash * prob;
-            let displaySingleAmount = `$${Math.abs(baseCash).toFixed(baseCash % 1 !== 0 ? 1 : 0)}`;
             let displayExpectedText = "";
             let incomeClass = "income-zero";
+
+            // ②単発額の +/- 符号付与
+            let singleSign = baseCash > 0 ? "+" : (baseCash < 0 ? "-" : "");
+            let displaySingleAmount = `${singleSign}$${Math.abs(baseCash).toFixed(baseCash % 1 !== 0 ? 1 : 0)}`;
 
             if (isSpecialEffect) {
                 if (baseCash > 0) {
                     displayExpectedText = `+$${calcExpected.toFixed(2)} / ターン`;
                     incomeClass = "income-positive";
+                    totalNetExpected += calcExpected;
                 } else if (baseCash < 0) {
                     displayExpectedText = `-$${Math.abs(calcExpected).toFixed(2)} / ターン`;
                     incomeClass = "income-negative";
+                    totalNetExpected -= Math.abs(calcExpected);
                 } else {
                     displayExpectedText = "$0.00 / ターン";
                 }
@@ -1208,14 +1268,27 @@ function updateUI() {
                 if (state.ownerType === "SELF") {
                     displayExpectedText = `+$${calcExpected.toFixed(2)} / ターン`;
                     incomeClass = "income-positive";
+                    totalNetExpected += calcExpected;
                 } else if (state.ownerType === "ENEMY") {
+                    displaySingleAmount = `-$${Math.abs(baseCash).toFixed(baseCash % 1 !== 0 ? 1 : 0)}`;
                     displayExpectedText = `-$${calcExpected.toFixed(2)} / ターン`;
                     incomeClass = "income-negative";
+                    totalNetExpected -= calcExpected;
                 } else {
                     displaySingleAmount = "$0";
                     displayExpectedText = "$0.00 / ターン";
                 }
             }
+
+            // 要約データの集計
+            if (state.ownerType === "SELF") {
+                selfPropsCount++;
+                if (state.monopolyType === "COLOR_MONOPOLY") monopoliesSet.add(item.group);
+            }
+            if (state.houses >= 1 && state.houses <= 4) totalHousesUsed += state.houses;
+            if (state.houses === 5) totalHotelsUsed += 1;
+
+            tr.onclick = () => showDetail(item.id); // ①詳細モーダル呼び出し
 
             tr.innerHTML = `
                 <td><strong>${item.id}</strong></td>
@@ -1229,6 +1302,22 @@ function updateUI() {
             `;
             gsTbody.appendChild(tr);
         });
+
+        // ③要約サマリーエリアのDOM更新
+        document.getElementById("summarySelfProperties").innerText = `${selfPropsCount} 個`;
+        
+        let monopArray = Array.from(monopoliesSet);
+        document.getElementById("summaryMonopolies").innerText = monopArray.length > 0 ? monopArray.join(", ") : "なし";
+        
+        let totalNetSign = totalNetExpected > 0 ? "+" : (totalNetExpected < 0 ? "-" : "");
+        let netColorClass = totalNetExpected > 0 ? "income-positive" : (totalNetExpected < 0 ? "income-negative" : "income-zero");
+        let totalNetElem = document.getElementById("summaryTotalExpected");
+        totalNetElem.innerText = `${totalNetSign}$${Math.abs(totalNetExpected).toFixed(2)} / ターン`;
+        totalNetElem.className = `summary-card-value ${netColorClass}`;
+
+        let remHouses = Math.max(0, 32 - totalHousesUsed);
+        let remHotels = Math.max(0, 12 - totalHotelsUsed);
+        document.getElementById("summaryRemainingBuildings").innerText = `家 ${remHouses} 軒 / ホテル ${remHotels} 軒`;
     }
 
     const isMobile = window.innerWidth <= 768;
