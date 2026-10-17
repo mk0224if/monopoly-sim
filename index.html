@@ -163,13 +163,23 @@
             border: 1px solid var(--border-color); border-radius: 6px;
         }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; min-width: 500px; }
-        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; min-width: 780px; }
+        th, td { padding: 8px 10px; border-bottom: 1px solid #eee; }
         th { background: #e9ecef; position: sticky; top: 0; z-index: 10; font-weight: 600; }
 
         tr.clickable-row { cursor: pointer; transition: background 0.15s; }
         tr.clickable-row:hover { background-color: #e2e8f0 !important; }
         .jail-row { background-color: #fff3bf !important; font-weight: bold; }
+
+        /* 場所名カラムの長さを抑えて右側の詰まりを解消 */
+        .col-id { width: 40px; text-align: center; }
+        .col-name { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-group { width: 90px; }
+        .col-owner { width: 95px; }
+        .col-type { width: 110px; }
+        .col-house { width: 100px; }
+        .col-amount { width: 95px; text-align: right; }
+        .col-exp { width: 155px; text-align: right; }
 
         .badge {
             display: inline-block; padding: 2px 8px; border-radius: 4px;
@@ -219,7 +229,7 @@
             border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .game-state-header { margin-bottom: 16px; }
+        .game-state-header { margin-bottom: 12px; }
         .game-state-title { font-size: 18px; font-weight: bold; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
         .game-state-subtitle { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.5; }
 
@@ -251,7 +261,29 @@
             cursor: pointer;
         }
 
-        .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
+        /* 表の外に配置する注釈エリア */
+        .notes-external-box {
+            margin-top: 12px;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background-color: #f8fafc;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 4px;
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .notes-external-box ul {
+            margin: 4px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .notes-external-box li {
+            margin-bottom: 2px;
+        }
+
+        .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; width: 100%; box-sizing: border-box; }
         .state-select:disabled { background: #f1f3f5; color: #aaa; cursor: not-allowed; }
 
         .income-positive { color: #27ae60 !important; font-weight: bold; }
@@ -515,20 +547,29 @@
                         🔒 刑務所脱出費用 ($50) を収支計算に含める
                     </label>
                 </div>
+
+                <!-- 表の外に配置した詳細注釈 -->
+                <div class="notes-external-box">
+                    <strong>💡 特殊収支項目の算出について:</strong>
+                    <ul>
+                        <li><strong>周回ボーナス (GO給与):</strong> ボードを一周通過・着地した際や、チャンス・共同基金の移動カードによってGOを通過した際に得られる $200 の給料を、1ターンあたりの平均獲得額に換算した値です。</li>
+                        <li><strong>刑務所脱出費用 ($50):</strong> 選択した刑務所戦略に応じて発生する $50 の支払い回数を1ターン平均に換算した値です。※サイコロのゾロ目による無料脱出は反映されていますが、釈放カード（Get Out of Jail Free）の使用は計算に含まれていません。</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="table-box">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 45px;">ID</th>
-                            <th>場所名</th>
-                            <th>グループ</th>
-                            <th>所有者</th>
-                            <th>所有形態 / 駅数</th>
-                            <th>建設状況（家/ホテル）</th>
-                            <th>現在の単発額 ($)</th>
-                            <th>1ターンあたりの期待収支 ($/ターン)</th>
+                            <th class="col-id">ID</th>
+                            <th class="col-name">場所名</th>
+                            <th class="col-group">グループ</th>
+                            <th class="col-owner">所有者</th>
+                            <th class="col-type">所有形態/駅数</th>
+                            <th class="col-house">建設状況</th>
+                            <th class="col-amount">単発額 ($)</th>
+                            <th class="col-exp">1ターン期待収支</th>
                         </tr>
                     </thead>
                     <tbody id="gameStateTableBody"></tbody>
@@ -1202,7 +1243,6 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-// 鉄道などの所有状態更新ロジック改修
 function updatePropertyState(id, key, val) {
     const targetMeta = boardMeta[id];
     propertyGameState[id][key] = val;
@@ -1237,19 +1277,16 @@ function updatePropertyState(id, key, val) {
         }
     }
 
-    // 鉄道（1〜4駅）選択時のリンク改修
     if (key === 'railCount') {
         let railMetas = boardMeta.filter(m => m.type === "RAILROAD");
         let currentOwner = propertyGameState[id].ownerType;
 
         if (val === 4) {
-            // 「4駅独占」選択時のみ全鉄道を一括同期
             railMetas.forEach(m => {
                 propertyGameState[m.id].ownerType = currentOwner;
                 propertyGameState[m.id].railCount = 4;
             });
         } else {
-            // 1, 2, 3駅所有選択時（独占解除時）は他駅をリンクさせず、選択した駅のみ更新
             propertyGameState[id].railCount = val;
         }
     }
@@ -1317,14 +1354,14 @@ function updateUI() {
         bonusTr.style.backgroundColor = includeGo ? "#f0fff4" : "#f8f9fa";
         bonusTr.style.opacity = includeGo ? "1" : "0.5";
         bonusTr.innerHTML = `
-            <td><strong style="color: #27ae60;">-</strong></td>
-            <td><strong style="color: #27ae60;">✨ 周回ボーナス (GO給与)</strong></td>
-            <td><span class="badge bg-bonus">基本給与</span></td>
-            <td><span style="color: #888;">全員共通</span></td>
-            <td><span style="color: #888;">通過・ワープ時手当</span></td>
-            <td><span style="color: #888;">-</span></td>
-            <td><strong>+$200</strong></td>
-            <td><strong class="${includeGo ? 'income-positive' : 'income-zero'}">+$${goSalaryExpected.toFixed(2)} / ターン ${includeGo ? '' : '(除外中)'}</strong></td>
+            <td class="col-id"><strong style="color: #27ae60;">-</strong></td>
+            <td class="col-name" title="周回ボーナス (GO給与)"><strong style="color: #27ae60;">✨ 周回ボーナス</strong></td>
+            <td class="col-group"><span class="badge bg-bonus">基本給与</span></td>
+            <td class="col-owner"><span style="color: #888;">全員共通</span></td>
+            <td class="col-type"><span style="color: #888;">通過手当</span></td>
+            <td class="col-house"><span style="color: #888;">-</span></td>
+            <td class="col-amount"><strong>+$200</strong></td>
+            <td class="col-exp"><strong class="${includeGo ? 'income-positive' : 'income-zero'}">+$${goSalaryExpected.toFixed(2)} / ターン ${includeGo ? '' : '(除外)'}</strong></td>
         `;
         gsTbody.appendChild(bonusTr);
 
@@ -1332,19 +1369,14 @@ function updateUI() {
         jailFeeTr.style.backgroundColor = includeJail ? "#fff5f5" : "#f8f9fa";
         jailFeeTr.style.opacity = includeJail ? "1" : "0.5";
         jailFeeTr.innerHTML = `
-            <td><strong style="color: #e74c3c;">-</strong></td>
-            <td>
-                <strong style="color: #e74c3c;">🔒 刑務所脱出費用 ($50)</strong>
-                <div style="font-size: 11px; color: #888; font-weight: normal; margin-top: 2px;">
-                    ※釈放カード（Get Out of Jail Free）による無料脱出は計算から除外されています（サイコロのゾロ目脱出および脱出費用の支払いを基に算出）。
-                </div>
-            </td>
-            <td><span class="badge bg-jail-fee">脱出手当</span></td>
-            <td><span style="color: #888;">全員共通</span></td>
-            <td><span style="color: #888;">釈放支払い手当</span></td>
-            <td><span style="color: #888;">-</span></td>
-            <td><strong>-$50</strong></td>
-            <td><strong class="${includeJail ? 'income-negative' : 'income-zero'}">-$${jailFeeExpected.toFixed(2)} / ターン ${includeJail ? '' : '(除外中)'}</strong></td>
+            <td class="col-id"><strong style="color: #e74c3c;">-</strong></td>
+            <td class="col-name" title="刑務所脱出費用 ($50)"><strong style="color: #e74c3c;">🔒 刑務所脱出費</strong></td>
+            <td class="col-group"><span class="badge bg-jail-fee">脱出手当</span></td>
+            <td class="col-owner"><span style="color: #888;">全員共通</span></td>
+            <td class="col-type"><span style="color: #888;">釈放手当</span></td>
+            <td class="col-house"><span style="color: #888;">-</span></td>
+            <td class="col-amount"><strong>-$50</strong></td>
+            <td class="col-exp"><strong class="${includeJail ? 'income-negative' : 'income-zero'}">-$${jailFeeExpected.toFixed(2)} / ターン ${includeJail ? '' : '(除外)'}</strong></td>
         `;
         gsTbody.appendChild(jailFeeTr);
 
@@ -1373,17 +1405,17 @@ function updateUI() {
             if (["PROPERTY", "UTILITY"].includes(item.type)) {
                 monopolyTypeHTML = `
                     <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'monopolyType', this.value)">
-                        <option value="SINGLE" ${state.monopolyType === 'SINGLE' ? 'selected' : ''}>単独所有</option>
-                        <option value="COLOR_MONOPOLY" ${state.monopolyType === 'COLOR_MONOPOLY' ? 'selected' : ''}>グループ独占</option>
+                        <option value="SINGLE" ${state.monopolyType === 'SINGLE' ? 'selected' : ''}>単独</option>
+                        <option value="COLOR_MONOPOLY" ${state.monopolyType === 'COLOR_MONOPOLY' ? 'selected' : ''}>独占</option>
                     </select>
                 `;
             } else if (item.type === "RAILROAD") {
                 monopolyTypeHTML = `
                     <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'railCount', parseInt(this.value))">
-                        <option value="1" ${state.railCount === 1 ? 'selected' : ''}>1 駅所有 ($25)</option>
-                        <option value="2" ${state.railCount === 2 ? 'selected' : ''}>2 駅所有 ($50)</option>
-                        <option value="3" ${state.railCount === 3 ? 'selected' : ''}>3 駅所有 ($100)</option>
-                        <option value="4" ${state.railCount === 4 ? 'selected' : ''}>4 駅独占 ($200)</option>
+                        <option value="1" ${state.railCount === 1 ? 'selected' : ''}>1駅($25)</option>
+                        <option value="2" ${state.railCount === 2 ? 'selected' : ''}>2駅($50)</option>
+                        <option value="3" ${state.railCount === 3 ? 'selected' : ''}>3駅($100)</option>
+                        <option value="4" ${state.railCount === 4 ? 'selected' : ''}>4駅($200)</option>
                     </select>
                 `;
             }
@@ -1456,14 +1488,14 @@ function updateUI() {
             tr.onclick = () => showDetail(item.id);
 
             tr.innerHTML = `
-                <td><strong>${item.id}</strong></td>
-                <td><strong>${item.jp}</strong></td>
-                <td><span class="badge ${item.badge}">${item.group}</span></td>
-                <td>${ownerTypeHTML}</td>
-                <td>${monopolyTypeHTML}</td>
-                <td>${houseSelectHTML}</td>
-                <td><strong>${displaySingleAmount}</strong></td>
-                <td><strong class="${incomeClass}">${displayExpectedText}</strong></td>
+                <td class="col-id"><strong>${item.id}</strong></td>
+                <td class="col-name" title="${item.jp}"><strong>${item.jp}</strong></td>
+                <td class="col-group"><span class="badge ${item.badge}">${item.group}</span></td>
+                <td class="col-owner">${ownerTypeHTML}</td>
+                <td class="col-type">${monopolyTypeHTML}</td>
+                <td class="col-house">${houseSelectHTML}</td>
+                <td class="col-amount"><strong>${displaySingleAmount}</strong></td>
+                <td class="col-exp"><strong class="${incomeClass}">${displayExpectedText}</strong></td>
             `;
             gsTbody.appendChild(tr);
         });
