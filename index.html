@@ -482,7 +482,7 @@
 </div>
 
 <script>
-// チャンスカード全16枚詳細情報（移動効果つき）
+// チャンスカード全16枚詳細情報
 const chanceCardsInfo = [
     { text: "GOへ進む ($200受取)", move: true },
     { text: "イリノイ通りへ進む", move: true },
@@ -501,7 +501,7 @@ const chanceCardsInfo = [
     { text: "クロスワード大会で勝利 ($10受取)", move: false }
 ];
 
-// 共同基金カード全16枚詳細情報（移動効果つき）
+// 共同基金カード全16枚詳細情報
 const communityCardsInfo = [
     { text: "GOへ進む ($200受取)", move: true },
     { text: "刑務所へ行く", move: true },
@@ -521,7 +521,7 @@ const communityCardsInfo = [
     { text: "美人コンテスト第2位 ($10受取)", move: false }
 ];
 
-// 全40マスのメタデータと詳細データ情報（完全復元）
+// 全40マスのメタデータと詳細データ情報
 const boardMeta = [
     { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", pinClass: "pin-special",
       type: "SPECIAL", baseCashEffect: 200, desc: "通過時に給料 $200 を受け取ります。直接止まった場合も $200 を獲得します。" },
@@ -874,7 +874,7 @@ function getBaseCashValue(id) {
     return 0;
 }
 
-// モーダルポップアップ詳細表示（全解説文章・カード一覧・スパークライングラフ完全復元）
+// モーダルポップアップ詳細表示（未所有時のハイライト非表示修正済み）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
@@ -898,6 +898,7 @@ function showDetail(id) {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
 
+        // 未所有（NONE）の場合は常にハイライトしないように修正
         let isActiveRow = (typeIndex) => {
             if (state.ownerType === "NONE") return false;
             if (typeIndex === 0 && state.houses === 0 && state.monopolyType === "SINGLE") return true;
@@ -913,7 +914,7 @@ function showDetail(id) {
                 <tr><th>抵当受取額</th><td>$${item.mortgage} (解除費: $${Math.round(item.mortgage * 1.1)})</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入 <small style="font-weight: normal; color: #27ae60;">(緑背景＝現在のプレイ状況)</small></h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入 ${state.ownerType !== 'NONE' ? '<small style="font-weight: normal; color: #27ae60;">(緑背景＝現在の設定)</small>' : ''}</h4>
             <table class="detail-table">
                 <thead>
                     <tr><th>所有・建設状態</th><th style="width: 100px;">家賃 ($)</th><th style="width: 170px;">1ターンあたり期待収入</th></tr>
@@ -944,7 +945,7 @@ function showDetail(id) {
                     <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
                     <tr><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
                     <tr><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
-                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -961,7 +962,7 @@ function showDetail(id) {
                 <thead><tr><th>所有数</th><th>家賃ルール</th><th>1ターンあたり期待収入 (平均)</th></tr></thead>
                 <tbody>
                     <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
-                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -983,7 +984,6 @@ function showDetail(id) {
         html += `<p style="line-height: 1.6; font-size: 13px; background: #f8f9fa; padding: 12px; border-radius: 6px;">${item.desc}</p>`;
     }
 
-    // 全体進行 vs 初期100ターン 確率推移グラフタブ復元
     let totalCountsArr = visitHistory[item.id];
     let stepInterval = targetTurns / 10;
     let totalProbArr = totalCountsArr.map((cnt, i) => currentTurns > 0 ? (cnt / (stepInterval * (i + 1))) * 100 : 0);
