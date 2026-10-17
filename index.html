@@ -43,7 +43,6 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* --- 1. 条件設定画面 --- */
         .config-card {
             max-width: 600px;
             margin: 0 auto;
@@ -71,7 +70,6 @@
 
         .btn-start:hover { background-color: var(--btn-green-hover); }
 
-        /* --- 2. 結果画面 --- */
         .header-actions {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 16px; background: #f8f9fa; padding: 12px 16px;
@@ -189,6 +187,7 @@
         .bg-railroad { background-color: #333; }
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
+        .bg-bonus { background-color: #27ae60; }
 
         .dice-section {
             margin-top: 60px; padding: 24px; background: #f8f9fa;
@@ -226,7 +225,6 @@
         .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
         .state-select:disabled { background: #f1f3f5; color: #aaa; cursor: not-allowed; }
 
-        /* 収支の色分けスタイリング */
         .income-positive { color: #27ae60 !important; font-weight: bold; }
         .income-negative { color: #e74c3c !important; font-weight: bold; }
         .income-zero { color: #888888; }
@@ -259,7 +257,6 @@
             color: var(--primary-color);
         }
 
-        /* モーダル */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;
@@ -335,7 +332,6 @@
 <div class="container">
     <h1>モノポリー（US版）確率シミュレーター</h1>
 
-    <!-- 1. 条件設定画面 -->
     <div id="configScreen" class="screen active">
         <div class="config-card">
             <h2 style="margin-top: 0; font-size: 18px; color: #333;">シミュレーション条件の設定</h2>
@@ -377,7 +373,6 @@
         </div>
     </div>
 
-    <!-- 2. 結果表示画面 -->
     <div id="resultScreen" class="screen">
         <div class="header-actions">
             <div class="info-summary" id="configSummary">設定: ---</div>
@@ -478,7 +473,7 @@
                     <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
                     <div class="game-state-subtitle" id="gameStateSubtitle">
                         ※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。<br>
-                        <strong style="color: #d32f2f;">【計算仕様に関する注意】</strong> 1ターンあたりの収支期待値は、Goマスの通過・カード移動に伴う給料（+$200）をあえてカウントしていないため、実際の毎ターン総収支より若干低く調整されています。
+                        <strong style="color: #27ae60;">【計算仕様】</strong> サイコロやカードによる周回ボーナスは別枠としてカウントされています。
                     </div>
                 </div>
             </div>
@@ -524,7 +519,6 @@
     </div>
 </div>
 
-<!-- モーダルダイアログ -->
 <div class="modal-overlay" id="detailModal" onclick="closeModalOnOverlay(event)">
     <div class="modal-card">
         <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -533,7 +527,6 @@
 </div>
 
 <script>
-// チャンスカード全16枚詳細情報
 const chanceCardsInfo = [
     { text: "GOへ進む ($200受取)", move: true },
     { text: "イリノイ通りへ進む", move: true },
@@ -552,7 +545,6 @@ const chanceCardsInfo = [
     { text: "クロスワード大会で勝利 ($10受取)", move: false }
 ];
 
-// 共同基金カード全16枚詳細情報
 const communityCardsInfo = [
     { text: "GOへ進む ($200受取)", move: true },
     { text: "刑務所へ行く", move: true },
@@ -572,10 +564,9 @@ const communityCardsInfo = [
     { text: "美人コンテスト第2位 ($10受取)", move: false }
 ];
 
-// 全40マスのメタデータと詳細データ情報
 const boardMeta = [
     { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", baseCashEffect: 0, desc: "通過・到着時に給料 $200 を獲得します。※Goマスの+$200は毎ターン全体の基本収入のため、各マスの期待収支からは除外されています。" },
+      type: "SPECIAL", baseCashEffect: 0, desc: "通過・到着時に給料 $200 を獲得します。※サイコロやカードによる周回ボーナスは別枠としてカウントされています。" },
     { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [2, 10, 30, 90, 160, 250] },
     { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -667,6 +658,8 @@ let visitCounts = new Array(40).fill(0);
 let visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 
+let goSalaryCount = 0;
+
 let currentTurns = 0;
 let targetTurns = 1000000;
 let selectedStrategy = "EARLY_EXIT";
@@ -729,18 +722,29 @@ function resolveLanding(tilePos) {
 
     if ([7, 22, 36].includes(tilePos)) {
         let card = drawChance();
-        if (card === "GO") { pos = 0; visitCounts[pos]++; }
-        else if (card === "ILLINOIS") { pos = 24; visitCounts[pos]++; }
-        else if (card === "ST_CHARLES") { pos = 11; visitCounts[pos]++; }
-        else if (card === "READING") { pos = 5; visitCounts[pos]++; }
-        else if (card === "BOARDWALK") { pos = 39; visitCounts[pos]++; }
-        else if (card === "JAIL") { sendToJail(); }
-        else if (card === "RAILROAD") {
-            pos = (tilePos === 7) ? 15 : (tilePos === 22 ? 25 : 5);
-            visitCounts[pos]++;
+        if (card === "GO") { 
+            pos = 0; visitCounts[pos]++; goSalaryCount++; 
+        } else if (card === "ILLINOIS") { 
+            if (tilePos > 24) goSalaryCount++;
+            pos = 24; visitCounts[pos]++; 
+        } else if (card === "ST_CHARLES") { 
+            if (tilePos > 11) goSalaryCount++;
+            pos = 11; visitCounts[pos]++; 
+        } else if (card === "READING") { 
+            if (tilePos > 5) goSalaryCount++;
+            pos = 5; visitCounts[pos]++; 
+        } else if (card === "BOARDWALK") { 
+            pos = 39; visitCounts[pos]++; 
+        } else if (card === "JAIL") { 
+            sendToJail(); 
+        } else if (card === "RAILROAD") {
+            let nextRail = (tilePos === 7) ? 15 : (tilePos === 22 ? 25 : 5);
+            if (tilePos > nextRail) goSalaryCount++;
+            pos = nextRail; visitCounts[pos]++;
         } else if (card === "UTILITY") {
-            pos = (tilePos === 22) ? 28 : 12;
-            visitCounts[pos]++;
+            let nextUtil = (tilePos === 22) ? 28 : 12;
+            if (tilePos > nextUtil) goSalaryCount++;
+            pos = nextUtil; visitCounts[pos]++;
         } else if (card === "BACK3") {
             pos = (tilePos - 3 + 40) % 40;
             if ([2, 17, 33].includes(pos)) resolveLanding(pos);
@@ -748,7 +752,7 @@ function resolveLanding(tilePos) {
         }
     } else if ([2, 17, 33].includes(tilePos)) {
         let card = drawCommunity();
-        if (card === "GO") { pos = 0; visitCounts[pos]++; }
+        if (card === "GO") { pos = 0; visitCounts[pos]++; goSalaryCount++; }
         else if (card === "JAIL") { sendToJail(); }
     }
 }
@@ -758,25 +762,33 @@ function stepTurn() {
     let d2 = Math.floor(Math.random() * 6) + 1;
     let isDouble = (d1 === d2);
 
+    let moveDice = d1 + d2;
+
     if (inJail) {
         if (isDouble) {
             inJail = false; doubleCount = 0; jailTurns = 0;
-            pos = (pos + d1 + d2) % 40; resolveLanding(pos);
+            if (pos + moveDice >= 40) goSalaryCount++;
+            pos = (pos + moveDice) % 40; resolveLanding(pos);
         } else {
             if (selectedStrategy === "EARLY_EXIT") {
                 inJail = false; jailTurns = 0;
-                pos = (pos + d1 + d2) % 40; resolveLanding(pos);
+                if (pos + moveDice >= 40) goSalaryCount++;
+                pos = (pos + moveDice) % 40; resolveLanding(pos);
             } else {
                 if (jailTurns === 2) {
                     inJail = false; jailTurns = 0;
-                    pos = (pos + d1 + d2) % 40; resolveLanding(pos);
+                    if (pos + moveDice >= 40) goSalaryCount++;
+                    pos = (pos + moveDice) % 40; resolveLanding(pos);
                 } else { jailTurns++; visitCounts[10]++; }
             }
         }
     } else {
         if (isDouble) doubleCount++; else doubleCount = 0;
         if (doubleCount === 3) sendToJail();
-        else { pos = (pos + d1 + d2) % 40; resolveLanding(pos); }
+        else { 
+            if (pos + moveDice >= 40) goSalaryCount++;
+            pos = (pos + moveDice) % 40; resolveLanding(pos); 
+        }
     }
 
     currentTurns++;
@@ -850,6 +862,7 @@ function startSimulation() {
     visitCounts.fill(0);
     visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
     earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
+    goSalaryCount = 0;
     currentTurns = 0; pos = 0; doubleCount = 0; inJail = false; jailTurns = 0;
     isSortedByProb = false;
     document.getElementById("sortBtn").innerText = "着地確率が高い順に並び替え";
@@ -897,16 +910,13 @@ function getBaseCashValue(id) {
     let item = boardMeta[id];
     let state = propertyGameState[id];
 
-    // GO通過給与（$200）を除外したカードの純粋な期待収支計算
     if (item.type === "CHANCE") {
         let opponents = playerCount - 1;
-        // GO移動時の$200を除外して計算 (150, 10, -15, 各者へ-$50)
         let totalVal = 150 + 10 - 15 - (50 * opponents);
         return totalVal / 16;
     }
     if (item.type === "COMMUNITY") {
         let opponents = playerCount - 1;
-        // GO移動時の$200を除外して計算 (100, 100, 50, 25, 20, 10, -100, -50, -50, 各者から+$50, +$10)
         let totalVal = 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents);
         return totalVal / 16;
     }
@@ -1149,18 +1159,15 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-// カラーグループ・鉄道・会社の全自動同期＆独占解体ロジック
 function updatePropertyState(id, key, val) {
     const targetMeta = boardMeta[id];
     propertyGameState[id][key] = val;
 
-    // 1. 未所有に変更された場合
     if (key === 'ownerType' && val === 'NONE') {
         propertyGameState[id].monopolyType = 'SINGLE';
         propertyGameState[id].houses = 0;
         propertyGameState[id].railCount = 1;
 
-        // グループ全体の独占を自動解体して連動初期化
         let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
         sameGroupMetas.forEach(m => {
             propertyGameState[m.id].monopolyType = 'SINGLE';
@@ -1169,18 +1176,15 @@ function updatePropertyState(id, key, val) {
         });
     }
 
-    // 2. カラーグループおよび会社（公共事業）の独占／単独選択時
     if (key === 'monopolyType') {
         let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
         if (val === 'COLOR_MONOPOLY') {
-            // グループ全マスを同じ所有者かつグループ独占に一括同期
             let currentOwner = propertyGameState[id].ownerType;
             sameGroupMetas.forEach(m => {
                 propertyGameState[m.id].ownerType = currentOwner;
                 propertyGameState[m.id].monopolyType = 'COLOR_MONOPOLY';
             });
         } else {
-            // 独占解体時：全マスを単独所有へリセット
             sameGroupMetas.forEach(m => {
                 propertyGameState[m.id].monopolyType = 'SINGLE';
                 propertyGameState[m.id].houses = 0;
@@ -1188,19 +1192,16 @@ function updatePropertyState(id, key, val) {
         }
     }
 
-    // 3. 鉄道（1〜4駅）選択時の連動ロジック
     if (key === 'railCount') {
         let railMetas = boardMeta.filter(m => m.type === "RAILROAD");
         let currentOwner = propertyGameState[id].ownerType;
 
         if (val === 4) {
-            // 4駅独占時：全4駅を同じ所有者の「4駅独占 ($200)」へ一括同期
             railMetas.forEach(m => {
                 propertyGameState[m.id].ownerType = currentOwner;
                 propertyGameState[m.id].railCount = 4;
             });
         } else {
-            // 独占崩れ（3駅以下選択時）：全駅の4駅独占を解除し、該当駅数を全駅へ適用
             railMetas.forEach(m => {
                 propertyGameState[m.id].railCount = val;
             });
@@ -1224,7 +1225,6 @@ function updateUI() {
     let maxProb = Math.max(...displayList.map(d => d.prob));
     if (isSortedByProb) displayList.sort((a, b) => b.prob - a.prob);
 
-    // 1. メインデータテーブル描画
     let tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
     displayList.forEach(item => {
@@ -1244,17 +1244,33 @@ function updateUI() {
         tbody.appendChild(tr);
     });
 
-    // 集計用変数
     let selfPropsCount = 0;
-    let monopoliesMap = new Map(); // グループ名 -> badgeClass
+    let monopoliesMap = new Map();
     let totalNetExpected = 0;
     let totalHousesUsed = 0;
     let totalHotelsUsed = 0;
 
-    // 2. 「現在の物件状況」テーブル描画
+    let goSalaryExpected = currentTurns > 0 ? ((goSalaryCount * 200) / currentTurns) : 0;
+    totalNetExpected += goSalaryExpected;
+
     let gsTbody = document.getElementById("gameStateTableBody");
     if (gsTbody) {
         gsTbody.innerHTML = "";
+
+        let bonusTr = document.createElement("tr");
+        bonusTr.style.backgroundColor = "#f0fff4";
+        bonusTr.innerHTML = `
+            <td><strong style="color: #27ae60;">-</strong></td>
+            <td><strong style="color: #27ae60;">✨ 周回ボーナス (GO給与)</strong></td>
+            <td><span class="badge bg-bonus">基本給与</span></td>
+            <td><span style="color: #888;">全員共通</span></td>
+            <td><span style="color: #888;">通過・ワープ時手当</span></td>
+            <td><span style="color: #888;">-</span></td>
+            <td><strong>+$200</strong></td>
+            <td><strong class="income-positive">+$${goSalaryExpected.toFixed(2)} / ターン</strong></td>
+        `;
+        gsTbody.appendChild(bonusTr);
+
         boardMeta.forEach(item => {
             let tr = document.createElement("tr");
             tr.classList.add("clickable-row");
@@ -1346,7 +1362,6 @@ function updateUI() {
                 }
             }
 
-            // 自分の独占グループ記録（バッジ表示用）
             if (state.ownerType === "SELF") {
                 selfPropsCount++;
                 if (item.type === "PROPERTY" && state.monopolyType === "COLOR_MONOPOLY") {
@@ -1378,7 +1393,6 @@ function updateUI() {
 
         document.getElementById("summarySelfProperties").innerText = `${selfPropsCount} 個`;
 
-        // 独占カラーグループのバッジ（色付きタグ）表示化
         let monopContainer = document.getElementById("summaryMonopolies");
         if (monopoliesMap.size > 0) {
             monopContainer.innerHTML = Array.from(monopoliesMap.entries())
