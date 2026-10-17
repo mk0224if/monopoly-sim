@@ -230,7 +230,6 @@
         .income-negative { color: #e74c3c; font-weight: bold; }
         .income-zero { color: #888; }
 
-        /* サマリーダッシュボード */
         .summary-dashboard {
             margin-top: 20px;
             display: grid;
@@ -488,7 +487,7 @@
                             <th>場所名</th>
                             <th>グループ</th>
                             <th>所有者</th>
-                            <th>所有形態</th>
+                            <th>所有形態 / 駅数</th>
                             <th>建設状況（家/ホテル）</th>
                             <th>現在の単発額 ($)</th>
                             <th>1ターンあたりの期待収支 ($/ターン)</th>
@@ -498,7 +497,6 @@
                 </table>
             </div>
 
-            <!-- 要求③: 「現在の物件状況」下の要約ダッシュボード追加 -->
             <div class="summary-dashboard">
                 <div class="summary-card">
                     <div class="summary-card-title">🏠 現在の自分の物件数</div>
@@ -657,6 +655,7 @@ const boardMeta = [
 let propertyGameState = Array.from({ length: 40 }, () => ({
     ownerType: "NONE",
     monopolyType: "SINGLE",
+    railCount: 1,
     houses: 0
 }));
 
@@ -916,13 +915,15 @@ function getBaseCashValue(id) {
             return state.monopolyType === "COLOR_MONOPOLY" ? (item.rent[0] * 2) : item.rent[0];
         }
     } else if (item.type === "RAILROAD") {
-        return state.monopolyType === "COLOR_MONOPOLY" ? 200 : 25;
+        const railRents = [0, 25, 50, 100, 200];
+        return railRents[state.railCount] || 25;
     } else if (item.type === "UTILITY") {
         return state.monopolyType === "COLOR_MONOPOLY" ? 70 : 28;
     }
     return 0;
 }
 
+// モーダルポップアップ詳細表示（未所有時のハイライト完全防止修正済み）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
@@ -946,12 +947,19 @@ function showDetail(id) {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
 
-        let isActiveRow = (typeIndex) => {
-            if (state.ownerType === "NONE") return false;
-            if (typeIndex === 0 && state.houses === 0 && state.monopolyType === "SINGLE") return true;
-            if (typeIndex === 1 && state.houses === 0 && state.monopolyType === "COLOR_MONOPOLY") return true;
-            if (typeIndex >= 2 && state.houses === (typeIndex - 1)) return true;
-            return false;
+        // 未所有（NONE）の時はすべての行でハイライトを行わないよう修正
+        let getRowStyle = (rowKey) => {
+            if (state.ownerType === "NONE") return "";
+            if (rowKey === 'SINGLE' && state.houses === 0 && state.monopolyType === "SINGLE") {
+                return 'background-color: #d4edda; font-weight: bold;';
+            }
+            if (rowKey === 'MONOPOLY' && state.houses === 0 && state.monopolyType === "COLOR_MONOPOLY") {
+                return 'background-color: #d4edda; font-weight: bold;';
+            }
+            if (typeof rowKey === 'number' && state.houses === rowKey) {
+                return 'background-color: #d4edda; font-weight: bold;';
+            }
+            return "";
         };
 
         html += `
@@ -967,49 +975,51 @@ function showDetail(id) {
                     <tr><th>所有・建設状態</th><th style="width: 100px;">家賃 ($)</th><th style="width: 170px;">1ターンあたり期待収入</th></tr>
                 </thead>
                 <tbody>
-                    <tr style="${isActiveRow(0) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(1) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(2) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 1 軒</td><td>$${r[1]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(3) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 2 軒</td><td>$${r[2]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(4) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 3 軒</td><td>$${r[3]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(5) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>家 4 軒</td><td>$${r[4]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td></tr>
-                    <tr style="${isActiveRow(6) ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle('SINGLE')}"><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle('MONOPOLY')}"><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(1)}"><td>家 1 軒</td><td>$${r[1]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(2)}"><td>家 2 軒</td><td>$${r[2]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(3)}"><td>家 3 軒</td><td>$${r[3]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(4)}"><td>家 4 軒</td><td>$${r[4]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(5)}"><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
     } else if (item.type === "RAILROAD") {
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
+        let getRailStyle = (count) => (state.ownerType !== 'NONE' && state.railCount === count) ? 'background-color: #d4edda; font-weight: bold;' : '';
         html += `
             <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
                 <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">鉄道の所有数別家賃と1ターンあたり期待収入</h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">鉄道の所有数別家賃と1ターンあたり期待収入 ${state.ownerType !== 'NONE' ? '<small style="font-weight: normal; color: #27ae60;">(緑背景＝現在の設定)</small>' : ''}</h4>
             <table class="detail-table">
                 <thead><tr><th>所有数</th><th>家賃 ($)</th><th>1ターンあたり期待収入</th></tr></thead>
                 <tbody>
-                    <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
-                    <tr><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
-                    <tr><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
-                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(1)}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(2)}"><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(3)}"><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(4)}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
     } else if (item.type === "UTILITY") {
         let calcExp = (multiplier) => (multiplier * 7 * currentProb).toFixed(2);
+        let getUtilStyle = (type) => (state.ownerType !== 'NONE' && state.monopolyType === type) ? 'background-color: #d4edda; font-weight: bold;' : '';
         html += `
             <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
                 <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">公共事業の所有数別家賃と平均期待収入 (ダイス目平均 7 想定)</h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">公共事業の所有数別家賃と平均期待収入 (ダイス目平均 7 想定) ${state.ownerType !== 'NONE' ? '<small style="font-weight: normal; color: #27ae60;">(緑背景＝現在の設定)</small>' : ''}</h4>
             <table class="detail-table">
                 <thead><tr><th>所有数</th><th>家賃ルール</th><th>1ターンあたり期待収入 (平均)</th></tr></thead>
                 <tbody>
-                    <tr style="${state.monopolyType === 'SINGLE' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
-                    <tr style="${state.monopolyType === 'COLOR_MONOPOLY' && state.ownerType !== 'NONE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                    <tr style="${getUtilStyle('SINGLE')}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
+                    <tr style="${getUtilStyle('COLOR_MONOPOLY')}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -1141,16 +1151,47 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+// カラーグループ同期＆独占解体ロジック
 function updatePropertyState(id, key, val) {
+    const targetMeta = boardMeta[id];
     propertyGameState[id][key] = val;
 
     if (key === 'ownerType' && val === 'NONE') {
         propertyGameState[id].monopolyType = 'SINGLE';
         propertyGameState[id].houses = 0;
+
+        // カラーグループの独占解体連動
+        if (targetMeta.type === "PROPERTY") {
+            let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+            sameGroupMetas.forEach(m => {
+                propertyGameState[m.id].monopolyType = 'SINGLE';
+                propertyGameState[m.id].houses = 0;
+            });
+        }
     }
 
-    if (key === 'monopolyType' && val !== 'COLOR_MONOPOLY') {
-        propertyGameState[id].houses = 0;
+    if (key === 'monopolyType') {
+        if (val === 'COLOR_MONOPOLY') {
+            // 同一グループすべてを同じ所有者の「グループ独占」へ同期
+            if (targetMeta.type === "PROPERTY") {
+                let currentOwner = propertyGameState[id].ownerType;
+                let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+                sameGroupMetas.forEach(m => {
+                    propertyGameState[m.id].ownerType = currentOwner;
+                    propertyGameState[m.id].monopolyType = 'COLOR_MONOPOLY';
+                });
+            }
+        } else {
+            // 独占解除時：同一グループすべての独占状態を解体して単独所有に戻す
+            propertyGameState[id].houses = 0;
+            if (targetMeta.type === "PROPERTY") {
+                let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+                sameGroupMetas.forEach(m => {
+                    propertyGameState[m.id].monopolyType = 'SINGLE';
+                    propertyGameState[m.id].houses = 0;
+                });
+            }
+        }
     }
 
     updateUI();
@@ -1203,7 +1244,7 @@ function updateUI() {
         gsTbody.innerHTML = "";
         boardMeta.forEach(item => {
             let tr = document.createElement("tr");
-            tr.classList.add("clickable-row"); // ①クリック可能にするクラス追加
+            tr.classList.add("clickable-row");
             let state = propertyGameState[item.id];
             let prob = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
             let baseCash = getBaseCashValue(item.id);
@@ -1221,11 +1262,23 @@ function updateUI() {
                         <option value="ENEMY" ${state.ownerType === 'ENEMY' ? 'selected' : ''}>敵所有</option>
                     </select>
                 `;
+            }
 
+            if (["PROPERTY", "UTILITY"].includes(item.type)) {
                 monopolyTypeHTML = `
                     <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'monopolyType', this.value)">
                         <option value="SINGLE" ${state.monopolyType === 'SINGLE' ? 'selected' : ''}>単独所有</option>
                         <option value="COLOR_MONOPOLY" ${state.monopolyType === 'COLOR_MONOPOLY' ? 'selected' : ''}>グループ独占</option>
+                    </select>
+                `;
+            } else if (item.type === "RAILROAD") {
+                // 鉄道の1〜4駅所有選択
+                monopolyTypeHTML = `
+                    <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'railCount', parseInt(this.value))">
+                        <option value="1" ${state.railCount === 1 ? 'selected' : ''}>1 駅所有 ($25)</option>
+                        <option value="2" ${state.railCount === 2 ? 'selected' : ''}>2 駅所有 ($50)</option>
+                        <option value="3" ${state.railCount === 3 ? 'selected' : ''}>3 駅所有 ($100)</option>
+                        <option value="4" ${state.railCount === 4 ? 'selected' : ''}>4 駅独占 ($200)</option>
                     </select>
                 `;
             }
@@ -1248,7 +1301,6 @@ function updateUI() {
             let displayExpectedText = "";
             let incomeClass = "income-zero";
 
-            // ②単発額の +/- 符号付与
             let singleSign = baseCash > 0 ? "+" : (baseCash < 0 ? "-" : "");
             let displaySingleAmount = `${singleSign}$${Math.abs(baseCash).toFixed(baseCash % 1 !== 0 ? 1 : 0)}`;
 
@@ -1280,7 +1332,6 @@ function updateUI() {
                 }
             }
 
-            // 要約データの集計
             if (state.ownerType === "SELF") {
                 selfPropsCount++;
                 if (state.monopolyType === "COLOR_MONOPOLY") monopoliesSet.add(item.group);
@@ -1288,7 +1339,7 @@ function updateUI() {
             if (state.houses >= 1 && state.houses <= 4) totalHousesUsed += state.houses;
             if (state.houses === 5) totalHotelsUsed += 1;
 
-            tr.onclick = () => showDetail(item.id); // ①詳細モーダル呼び出し
+            tr.onclick = () => showDetail(item.id);
 
             tr.innerHTML = `
                 <td><strong>${item.id}</strong></td>
@@ -1303,7 +1354,6 @@ function updateUI() {
             gsTbody.appendChild(tr);
         });
 
-        // ③要約サマリーエリアのDOM更新
         document.getElementById("summarySelfProperties").innerText = `${selfPropsCount} 個`;
         
         let monopArray = Array.from(monopoliesSet);
