@@ -311,7 +311,7 @@
             border-collapse: collapse;
             font-size: 13px;
             text-align: left;
-            min-width: 500px;
+            min-width: 650px;
         }
 
         th, td {
@@ -363,10 +363,10 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
 
-        /* --- サイコロ確率セクション（最下部） --- */
+        /* --- サイコロ確率セクション（最下部・余白を60pxに拡大） --- */
         .dice-section {
-            margin-top: 32px;
-            padding: 20px;
+            margin-top: 60px;
+            padding: 24px;
             background: #f8f9fa;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -734,24 +734,26 @@
             <button class="btn-sort" id="sortBtn" onclick="toggleSort()">着地確率が高い順に並び替え</button>
         </div>
 
-        <!-- データテーブル -->
+        <!-- データテーブル（期待収入列を追加） -->
         <div class="table-box">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">ID</th>
+                        <th style="width: 45px;">ID</th>
                         <th>日本語場所名</th>
-                        <th>英語表記</th>
                         <th>グループ</th>
-                        <th>接触・着地回数</th>
-                        <th>1ターンあたりの接触確率 (%)</th>
+                        <th>接触確率 (%)</th>
+                        <th>更地家賃 ($)</th>
+                        <th>更地 期待収入 ($/ターン)</th>
+                        <th>ホテル家賃 ($)</th>
+                        <th>ホテル 期待収入 ($/ターン)</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
 
-        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部) -->
+        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部・余白拡大済み) -->
         <div class="dice-section">
             <div class="dice-section-title">
                 🎲 2個のサイコロを振った時の出目・確率分布（理論値）
@@ -1566,7 +1568,15 @@ function updateUI() {
     let displayList = boardMeta.map((meta, idx) => {
         let count = visitCounts[idx];
         let prob = currentTurns > 0 ? (count / currentTurns * 100) : 0;
-        return { ...meta, count, prob };
+        
+        // 期待収入計算
+        let baseRent = meta.type === "PROPERTY" ? meta.rent[0] : 0;
+        let hotelRent = meta.type === "PROPERTY" ? meta.rent[5] : 0;
+        
+        let baseExpected = (baseRent * (prob / 100)).toFixed(2);
+        let hotelExpected = (hotelRent * (prob / 100)).toFixed(2);
+
+        return { ...meta, count, prob, baseRent, hotelRent, baseExpected, hotelExpected };
     });
 
     let maxProb = Math.max(...displayList.map(d => d.prob));
@@ -1584,13 +1594,20 @@ function updateUI() {
         if (item.id === 10) tr.classList.add("jail-row");
         tr.onclick = () => showDetail(item.id);
 
+        let baseRentText = item.type === "PROPERTY" ? `$${item.baseRent}` : "-";
+        let hotelRentText = item.type === "PROPERTY" ? `$${item.hotelRent}` : "-";
+        let baseExpText = item.type === "PROPERTY" ? `$${item.baseExpected}` : "-";
+        let hotelExpText = item.type === "PROPERTY" ? `$${item.hotelExpected}` : "-";
+
         tr.innerHTML = `
             <td><strong>${item.id}</strong></td>
             <td><strong>${item.jp}</strong></td>
-            <td style="color: #666;">${item.en}</td>
             <td><span class="badge ${item.badge}">${item.group}</span></td>
-            <td>${item.count.toLocaleString()}</td>
             <td><strong>${item.prob.toFixed(3)}%</strong></td>
+            <td>${baseRentText}</td>
+            <td style="color: #2b6cb0;"><strong>${baseExpText}</strong></td>
+            <td>${hotelRentText}</td>
+            <td style="color: #27ae60;"><strong>${hotelExpText}</strong></td>
         `;
         tbody.appendChild(tr);
     });
