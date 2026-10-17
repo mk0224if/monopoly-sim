@@ -221,14 +221,15 @@
 
         .game-state-header { margin-bottom: 16px; }
         .game-state-title { font-size: 18px; font-weight: bold; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
-        .game-state-subtitle { font-size: 12px; color: #666; margin-top: 4px; }
+        .game-state-subtitle { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.5; }
 
         .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
         .state-select:disabled { background: #f1f3f5; color: #aaa; cursor: not-allowed; }
 
-        .income-positive { color: #27ae60; font-weight: bold; }
-        .income-negative { color: #e74c3c; font-weight: bold; }
-        .income-zero { color: #888; }
+        /* 収支の色分けスタイリング */
+        .income-positive { color: #27ae60 !important; font-weight: bold; }
+        .income-negative { color: #e74c3c !important; font-weight: bold; }
+        .income-zero { color: #888888; }
 
         .summary-dashboard {
             margin-top: 20px;
@@ -475,7 +476,10 @@
             <div class="game-state-header">
                 <div>
                     <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
-                    <div class="game-state-subtitle" id="gameStateSubtitle">※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。</div>
+                    <div class="game-state-subtitle" id="gameStateSubtitle">
+                        ※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。<br>
+                        <strong style="color: #d32f2f;">【計算仕様に関する注意】</strong> 1ターンあたりの収支期待値は、Goマスの通過・カード移動に伴う給料（+$200）をあえてカウントしていないため、実際の毎ターン総収支より若干低く調整されています。
+                    </div>
                 </div>
             </div>
 
@@ -504,7 +508,7 @@
                 </div>
                 <div class="summary-card">
                     <div class="summary-card-title">👑 現在独占しているカラーグループ</div>
-                    <div class="summary-card-value" id="summaryMonopolies" style="font-size: 15px;">なし</div>
+                    <div class="summary-card-value" id="summaryMonopolies" style="font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 28px;">なし</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-card-title">💰 現在の1ターン当たりの期待収支</div>
@@ -571,7 +575,7 @@ const communityCardsInfo = [
 // 全40マスのメタデータと詳細データ情報
 const boardMeta = [
     { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", baseCashEffect: 200, desc: "通過時に給料 $200 を受け取ります。直接止まった場合も $200 を獲得します。" },
+      type: "SPECIAL", baseCashEffect: 0, desc: "通過・到着時に給料 $200 を獲得します。※Goマスの+$200は毎ターン全体の基本収入のため、各マスの期待収支からは除外されています。" },
     { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [2, 10, 30, 90, 160, 250] },
     { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -590,7 +594,7 @@ const boardMeta = [
       type: "PROPERTY", cost: 100, houseCost: 50, mortgage: 50, rent: [6, 30, 90, 270, 400, 550] },
     { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue", pinClass: "pin-light-blue",
       type: "PROPERTY", cost: 120, houseCost: 50, mortgage: 60, rent: [8, 40, 100, 300, 450, 600] },
-    { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "刑務所", badge: "bg-special", pinClass: "pin-special",
+    { id: 10, jp: "刑務所 / 刑務所見学", en: "In Jail / Just Visiting", group: "特殊", badge: "bg-special", pinClass: "pin-special",
       type: "SPECIAL", desc: "通常の移動で止まった場合は「見学中（Just Visiting）」です。刑務所送りになった場合は収監され、ゾロ目を出すか$50払って脱出します。" },
     { id: 11, jp: "セント・チャールズ・プレイス", en: "St. Charles Place", group: "ライトパープル", badge: "bg-purple", pinClass: "pin-purple",
       type: "PROPERTY", cost: 140, houseCost: 100, mortgage: 70, rent: [10, 50, 150, 450, 625, 750] },
@@ -857,7 +861,6 @@ function startSimulation() {
     let stratText = selectedStrategy === "EARLY_EXIT" ? "即時脱出" : "ゾロ目狙い";
     let modeText = targetTurns === 300 ? "300 ターン (1試合想定)" : `${targetTurns.toLocaleString()} ターン`;
     document.getElementById("configSummary").innerText = `条件: 【${playerCount}人プレイ】 / 【${stratText}】 / モード: 【${modeText}】`;
-    document.getElementById("gameStateSubtitle").innerText = `※${playerCount}人プレイ（自分＋敵${playerCount - 1}人）想定。所有者や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。`;
 
     renderBoardPins();
     isRunning = true;
@@ -894,14 +897,17 @@ function getBaseCashValue(id) {
     let item = boardMeta[id];
     let state = propertyGameState[id];
 
+    // GO通過給与（$200）を除外したカードの純粋な期待収支計算
     if (item.type === "CHANCE") {
         let opponents = playerCount - 1;
-        let totalVal = 200 + 150 + 10 - 15 - (50 * opponents);
+        // GO移動時の$200を除外して計算 (150, 10, -15, 各者へ-$50)
+        let totalVal = 150 + 10 - 15 - (50 * opponents);
         return totalVal / 16;
     }
     if (item.type === "COMMUNITY") {
         let opponents = playerCount - 1;
-        let totalVal = 200 + 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents);
+        // GO移動時の$200を除外して計算 (100, 100, 50, 25, 20, 10, -100, -50, -50, 各者から+$50, +$10)
+        let totalVal = 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents);
         return totalVal / 16;
     }
     if (item.baseCashEffect !== undefined) return item.baseCashEffect;
@@ -923,7 +929,6 @@ function getBaseCashValue(id) {
     return 0;
 }
 
-// モーダルポップアップ詳細表示（未所有時のハイライト完全防止修正済み）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
@@ -947,18 +952,11 @@ function showDetail(id) {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
 
-        // 未所有（NONE）の時はすべての行でハイライトを行わないよう修正
         let getRowStyle = (rowKey) => {
             if (state.ownerType === "NONE") return "";
-            if (rowKey === 'SINGLE' && state.houses === 0 && state.monopolyType === "SINGLE") {
-                return 'background-color: #d4edda; font-weight: bold;';
-            }
-            if (rowKey === 'MONOPOLY' && state.houses === 0 && state.monopolyType === "COLOR_MONOPOLY") {
-                return 'background-color: #d4edda; font-weight: bold;';
-            }
-            if (typeof rowKey === 'number' && state.houses === rowKey) {
-                return 'background-color: #d4edda; font-weight: bold;';
-            }
+            if (rowKey === 'SINGLE' && state.houses === 0 && state.monopolyType === "SINGLE") return 'background-color: #d4edda; font-weight: bold;';
+            if (rowKey === 'MONOPOLY' && state.houses === 0 && state.monopolyType === "COLOR_MONOPOLY") return 'background-color: #d4edda; font-weight: bold;';
+            if (typeof rowKey === 'number' && state.houses === rowKey) return 'background-color: #d4edda; font-weight: bold;';
             return "";
         };
 
@@ -975,13 +973,13 @@ function showDetail(id) {
                     <tr><th>所有・建設状態</th><th style="width: 100px;">家賃 ($)</th><th style="width: 170px;">1ターンあたり期待収入</th></tr>
                 </thead>
                 <tbody>
-                    <tr style="${getRowStyle('SINGLE')}"><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle('MONOPOLY')}"><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle(1)}"><td>家 1 軒</td><td>$${r[1]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle(2)}"><td>家 2 軒</td><td>$${r[2]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle(3)}"><td>家 3 軒</td><td>$${r[3]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle(4)}"><td>家 4 軒</td><td>$${r[4]}</td><td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td></tr>
-                    <tr style="${getRowStyle(5)}"><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle('SINGLE')}"><td>更地 (基本家賃)</td><td>$${r[0]}</td><td><strong class="income-positive">+$${calcExp(r[0])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle('MONOPOLY')}"><td>更地 (カラーグループ独占)</td><td>$${r[0] * 2}</td><td><strong class="income-positive">+$${calcExp(r[0] * 2)} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(1)}"><td>家 1 軒</td><td>$${r[1]}</td><td><strong class="income-positive">+$${calcExp(r[1])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(2)}"><td>家 2 軒</td><td>$${r[2]}</td><td><strong class="income-positive">+$${calcExp(r[2])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(3)}"><td>家 3 軒</td><td>$${r[3]}</td><td><strong class="income-positive">+$${calcExp(r[3])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(4)}"><td>家 4 軒</td><td>$${r[4]}</td><td><strong class="income-positive">+$${calcExp(r[4])} / ターン</strong></td></tr>
+                    <tr style="${getRowStyle(5)}"><td><strong>ホテル</strong></td><td><strong>$${r[5]}</strong></td><td><strong class="income-positive" style="font-size: 14px;">+$${calcExp(r[5])} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -998,10 +996,10 @@ function showDetail(id) {
             <table class="detail-table">
                 <thead><tr><th>所有数</th><th>家賃 ($)</th><th>1ターンあたり期待収入</th></tr></thead>
                 <tbody>
-                    <tr style="${getRailStyle(1)}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
-                    <tr style="${getRailStyle(2)}"><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
-                    <tr style="${getRailStyle(3)}"><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
-                    <tr style="${getRailStyle(4)}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(1)}"><td>1 駅所有</td><td>$25</td><td><strong class="income-positive">+$${calcExp(25)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(2)}"><td>2 駅所有</td><td>$50</td><td><strong class="income-positive">+$${calcExp(50)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(3)}"><td>3 駅所有</td><td>$100</td><td><strong class="income-positive">+$${calcExp(100)} / ターン</strong></td></tr>
+                    <tr style="${getRailStyle(4)}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong class="income-positive" style="font-size: 14px;">+$${calcExp(200)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -1018,8 +1016,8 @@ function showDetail(id) {
             <table class="detail-table">
                 <thead><tr><th>所有数</th><th>家賃ルール</th><th>1ターンあたり期待収入 (平均)</th></tr></thead>
                 <tbody>
-                    <tr style="${getUtilStyle('SINGLE')}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
-                    <tr style="${getUtilStyle('COLOR_MONOPOLY')}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                    <tr style="${getUtilStyle('SINGLE')}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong class="income-positive">+$${calcExp(4)} / ターン</strong></td></tr>
+                    <tr style="${getUtilStyle('COLOR_MONOPOLY')}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong class="income-positive" style="font-size: 14px;">+$${calcExp(10)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -1151,18 +1149,38 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-// カラーグループ同期＆独占解体ロジック
+// カラーグループ・鉄道・会社の全自動同期＆独占解体ロジック
 function updatePropertyState(id, key, val) {
     const targetMeta = boardMeta[id];
     propertyGameState[id][key] = val;
 
+    // 1. 未所有に変更された場合
     if (key === 'ownerType' && val === 'NONE') {
         propertyGameState[id].monopolyType = 'SINGLE';
         propertyGameState[id].houses = 0;
+        propertyGameState[id].railCount = 1;
 
-        // カラーグループの独占解体連動
-        if (targetMeta.type === "PROPERTY") {
-            let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+        // グループ全体の独占を自動解体して連動初期化
+        let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+        sameGroupMetas.forEach(m => {
+            propertyGameState[m.id].monopolyType = 'SINGLE';
+            propertyGameState[m.id].houses = 0;
+            if (m.type === "RAILROAD") propertyGameState[m.id].railCount = 1;
+        });
+    }
+
+    // 2. カラーグループおよび会社（公共事業）の独占／単独選択時
+    if (key === 'monopolyType') {
+        let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+        if (val === 'COLOR_MONOPOLY') {
+            // グループ全マスを同じ所有者かつグループ独占に一括同期
+            let currentOwner = propertyGameState[id].ownerType;
+            sameGroupMetas.forEach(m => {
+                propertyGameState[m.id].ownerType = currentOwner;
+                propertyGameState[m.id].monopolyType = 'COLOR_MONOPOLY';
+            });
+        } else {
+            // 独占解体時：全マスを単独所有へリセット
             sameGroupMetas.forEach(m => {
                 propertyGameState[m.id].monopolyType = 'SINGLE';
                 propertyGameState[m.id].houses = 0;
@@ -1170,27 +1188,22 @@ function updatePropertyState(id, key, val) {
         }
     }
 
-    if (key === 'monopolyType') {
-        if (val === 'COLOR_MONOPOLY') {
-            // 同一グループすべてを同じ所有者の「グループ独占」へ同期
-            if (targetMeta.type === "PROPERTY") {
-                let currentOwner = propertyGameState[id].ownerType;
-                let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
-                sameGroupMetas.forEach(m => {
-                    propertyGameState[m.id].ownerType = currentOwner;
-                    propertyGameState[m.id].monopolyType = 'COLOR_MONOPOLY';
-                });
-            }
+    // 3. 鉄道（1〜4駅）選択時の連動ロジック
+    if (key === 'railCount') {
+        let railMetas = boardMeta.filter(m => m.type === "RAILROAD");
+        let currentOwner = propertyGameState[id].ownerType;
+
+        if (val === 4) {
+            // 4駅独占時：全4駅を同じ所有者の「4駅独占 ($200)」へ一括同期
+            railMetas.forEach(m => {
+                propertyGameState[m.id].ownerType = currentOwner;
+                propertyGameState[m.id].railCount = 4;
+            });
         } else {
-            // 独占解除時：同一グループすべての独占状態を解体して単独所有に戻す
-            propertyGameState[id].houses = 0;
-            if (targetMeta.type === "PROPERTY") {
-                let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
-                sameGroupMetas.forEach(m => {
-                    propertyGameState[m.id].monopolyType = 'SINGLE';
-                    propertyGameState[m.id].houses = 0;
-                });
-            }
+            // 独占崩れ（3駅以下選択時）：全駅の4駅独占を解除し、該当駅数を全駅へ適用
+            railMetas.forEach(m => {
+                propertyGameState[m.id].railCount = val;
+            });
         }
     }
 
@@ -1233,7 +1246,7 @@ function updateUI() {
 
     // 集計用変数
     let selfPropsCount = 0;
-    let monopoliesSet = new Set();
+    let monopoliesMap = new Map(); // グループ名 -> badgeClass
     let totalNetExpected = 0;
     let totalHousesUsed = 0;
     let totalHotelsUsed = 0;
@@ -1272,7 +1285,6 @@ function updateUI() {
                     </select>
                 `;
             } else if (item.type === "RAILROAD") {
-                // 鉄道の1〜4駅所有選択
                 monopolyTypeHTML = `
                     <select class="state-select" onclick="event.stopPropagation()" ${state.ownerType === 'NONE' ? 'disabled' : ''} onchange="updatePropertyState(${item.id}, 'railCount', parseInt(this.value))">
                         <option value="1" ${state.railCount === 1 ? 'selected' : ''}>1 駅所有 ($25)</option>
@@ -1315,6 +1327,7 @@ function updateUI() {
                     totalNetExpected -= Math.abs(calcExpected);
                 } else {
                     displayExpectedText = "$0.00 / ターン";
+                    incomeClass = "income-zero";
                 }
             } else {
                 if (state.ownerType === "SELF") {
@@ -1329,13 +1342,22 @@ function updateUI() {
                 } else {
                     displaySingleAmount = "$0";
                     displayExpectedText = "$0.00 / ターン";
+                    incomeClass = "income-zero";
                 }
             }
 
+            // 自分の独占グループ記録（バッジ表示用）
             if (state.ownerType === "SELF") {
                 selfPropsCount++;
-                if (state.monopolyType === "COLOR_MONOPOLY") monopoliesSet.add(item.group);
+                if (item.type === "PROPERTY" && state.monopolyType === "COLOR_MONOPOLY") {
+                    monopoliesMap.set(item.group, item.badge);
+                } else if (item.type === "RAILROAD" && state.railCount === 4) {
+                    monopoliesMap.set(item.group, item.badge);
+                } else if (item.type === "UTILITY" && state.monopolyType === "COLOR_MONOPOLY") {
+                    monopoliesMap.set(item.group, item.badge);
+                }
             }
+
             if (state.houses >= 1 && state.houses <= 4) totalHousesUsed += state.houses;
             if (state.houses === 5) totalHotelsUsed += 1;
 
@@ -1355,9 +1377,16 @@ function updateUI() {
         });
 
         document.getElementById("summarySelfProperties").innerText = `${selfPropsCount} 個`;
-        
-        let monopArray = Array.from(monopoliesSet);
-        document.getElementById("summaryMonopolies").innerText = monopArray.length > 0 ? monopArray.join(", ") : "なし";
+
+        // 独占カラーグループのバッジ（色付きタグ）表示化
+        let monopContainer = document.getElementById("summaryMonopolies");
+        if (monopoliesMap.size > 0) {
+            monopContainer.innerHTML = Array.from(monopoliesMap.entries())
+                .map(([grp, badgeClass]) => `<span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px;">${grp}</span>`)
+                .join("");
+        } else {
+            monopContainer.innerText = "なし";
+        }
         
         let totalNetSign = totalNetExpected > 0 ? "+" : (totalNetExpected < 0 ? "-" : "");
         let netColorClass = totalNetExpected > 0 ? "income-positive" : (totalNetExpected < 0 ? "income-negative" : "income-zero");
