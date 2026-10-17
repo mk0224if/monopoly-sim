@@ -363,7 +363,7 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
 
-        /* --- サイコロ確率セクション（最下部・十分な余白） --- */
+        /* --- サイコロ確率セクション --- */
         .dice-section {
             margin-top: 60px;
             padding: 24px;
@@ -439,6 +439,48 @@
             font-size: 12px;
             color: #7b341e;
             line-height: 1.5;
+        }
+
+        /* --- 新設: 現在の物件状況（最下部マネージャー） --- */
+        .game-state-section {
+            margin-top: 60px;
+            padding: 24px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .game-state-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .game-state-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-state-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .state-select {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
         }
 
         /* モーダルダイアログ */
@@ -731,11 +773,11 @@
 
         <!-- テーブルツールバー -->
         <div class="table-toolbar">
-            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると各開発状態の家賃と1ターンあたり期待収入を表示）</small></div>
+            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると詳細情報と推移を表示）</small></div>
             <button class="btn-sort" id="sortBtn" onclick="toggleSort()">着地確率が高い順に並び替え</button>
         </div>
 
-        <!-- 表のデータテーブル（表面はすっきりシンプルな構成） -->
+        <!-- 表のデータテーブル -->
         <div class="table-box">
             <table>
                 <thead>
@@ -752,7 +794,7 @@
             </table>
         </div>
 
-        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部・十分な余白で配置) -->
+        <!-- サイコロ2個振った時の確率偏差・理論値表 -->
         <div class="dice-section">
             <div class="dice-section-title">
                 🎲 2個のサイコロを振った時の出目・確率分布（理論値）
@@ -856,6 +898,34 @@
                 3回連続でゾロ目が出る確率は <strong>(1/6)³ ＝ 1/216 (約0.46%)</strong> となり、出た瞬間に「刑務所送り」となります。
             </div>
         </div>
+
+        <!-- 新設: プレイ中の物件状況（GameState）マネージャー（最下部・間を空けて配置） -->
+        <div class="game-state-section">
+            <div class="game-state-header">
+                <div>
+                    <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
+                    <div class="game-state-subtitle">所有状態や建設数をリアルタイムに変更すると、1ターンあたりの現在期待収入が自動計算されます。</div>
+                </div>
+            </div>
+
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">ID</th>
+                            <th>場所名</th>
+                            <th>グループ</th>
+                            <th>所有状況</th>
+                            <th>建設状況（家/ホテル）</th>
+                            <th>現在の家賃 ($)</th>
+                            <th>1ターンあたりの期待収入</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gameStateTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -990,6 +1060,13 @@ const communityCardsInfo = [
     { text: "道路補修費の査定 (家1軒$40/ホテル$115)", move: false },
     { text: "美人コンテスト第2位 ($10受取)", move: false }
 ];
+
+// プレイ中の物件状況（GameState）保持オブジェクト
+// { owner: "UNOWNED"|"SINGLE"|"COLOR_MONOPOLY", houses: 0(更地)〜5(ホテル) }
+let propertyGameState = Array.from({ length: 40 }, () => ({
+    owner: "UNOWNED",
+    houses: 0
+}));
 
 // 計算・状態変数
 let visitCounts = new Array(40).fill(0);
@@ -1308,13 +1385,40 @@ function switchTab(tabName) {
     }
 }
 
-// モーダルポップアップ処理（裏の詳細画面：各状態ごとの家賃と期待収入を全行で表示）
+// 指定した物件の現在の実際の家賃を算出するヘルパー関数
+function getCurrentRent(id) {
+    let item = boardMeta[id];
+    let state = propertyGameState[id];
+
+    if (!item || state.owner === "UNOWNED") return 0;
+
+    if (item.type === "PROPERTY") {
+        if (state.houses > 0) {
+            return item.rent[state.houses];
+        } else {
+            return state.owner === "COLOR_MONOPOLY" ? (item.rent[0] * 2) : item.rent[0];
+        }
+    } else if (item.type === "RAILROAD") {
+        if (state.owner === "COLOR_MONOPOLY") return 200; // 4駅独占想定
+        if (state.owner === "SINGLE") return 25; // 1駅想定
+        return 0;
+    } else if (item.type === "UTILITY") {
+        if (state.owner === "COLOR_MONOPOLY") return 70; // 平均出目7 x 10倍
+        if (state.owner === "SINGLE") return 28; // 平均出目7 x 4倍
+        return 0;
+    }
+
+    return 0;
+}
+
+// モーダルポップアップ処理（裏の詳細画面：適用中状態のハイライト対応）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
 
     let currentProb = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
     let currentProbPct = (currentProb * 100).toFixed(3);
+    let state = propertyGameState[id];
 
     let html = `
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -1323,13 +1427,22 @@ function showDetail(id) {
         </div>
         <p style="color: #666; margin-top: 0; font-size: 13px;">
             <strong>英語名:</strong> ${item.en} (マスNo. ${item.id}) | 
-            <strong>現在の1ターンあたり着地確率:</strong> <span style="color: #3182ce; font-weight: bold;">${currentProbPct}%</span>
+            <strong>1ターンあたり着地確率:</strong> <span style="color: #3182ce; font-weight: bold;">${currentProbPct}%</span>
         </p>
     `;
 
     if (item.type === "PROPERTY") {
         let r = item.rent;
         let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
+
+        // 現在適用中の状態判定
+        let isActiveRow = (typeIndex) => {
+            if (state.owner === "UNOWNED") return false;
+            if (typeIndex === 0 && state.houses === 0 && state.owner === "SINGLE") return true;
+            if (typeIndex === 1 && state.houses === 0 && state.owner === "COLOR_MONOPOLY") return true;
+            if (typeIndex >= 2 && state.houses === (typeIndex - 1)) return true;
+            return false;
+        };
 
         html += `
             <table class="detail-table" style="margin-bottom: 16px;">
@@ -1338,7 +1451,7 @@ function showDetail(id) {
                 <tr><th>抵当受取額</th><td>$${item.mortgage} (解除費: $${Math.round(item.mortgage * 1.1)})</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入</h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入 <small style="font-weight: normal; color: #27ae60;">(緑背景＝現在のプレイ状況)</small></h4>
             <table class="detail-table">
                 <thead>
                     <tr>
@@ -1348,37 +1461,37 @@ function showDetail(id) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr style="${isActiveRow(0) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>更地 (基本家賃)</td>
                         <td>$${r[0]}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td>
                     </tr>
-                    <tr>
+                    <tr style="${isActiveRow(1) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>更地 (カラーグループ独占)</td>
                         <td>$${r[0] * 2}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td>
                     </tr>
-                    <tr>
+                    <tr style="${isActiveRow(2) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>家 1 軒</td>
                         <td>$${r[1]}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td>
                     </tr>
-                    <tr>
+                    <tr style="${isActiveRow(3) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>家 2 軒</td>
                         <td>$${r[2]}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td>
                     </tr>
-                    <tr>
+                    <tr style="${isActiveRow(4) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>家 3 軒</td>
                         <td>$${r[3]}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td>
                     </tr>
-                    <tr>
+                    <tr style="${isActiveRow(5) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td>家 4 軒</td>
                         <td>$${r[4]}</td>
                         <td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td>
                     </tr>
-                    <tr style="background-color: #f0fff4;">
+                    <tr style="${isActiveRow(6) ? 'background-color: #d4edda; font-weight: bold;' : ''}">
                         <td><strong>ホテル</strong></td>
                         <td><strong>$${r[5]}</strong></td>
                         <td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td>
@@ -1404,15 +1517,14 @@ function showDetail(id) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
+                    <tr style="${state.owner === 'SINGLE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
                     <tr><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
                     <tr><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
-                    <tr style="background-color: #f0fff4;"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                    <tr style="${state.owner === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
     } else if (item.type === "UTILITY") {
-        // ダイス合計平均 7 で計算した例
         let calcExp = (multiplier) => (multiplier * 7 * currentProb).toFixed(2);
         html += `
             <table class="detail-table" style="margin-bottom: 16px;">
@@ -1430,8 +1542,8 @@ function showDetail(id) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
-                    <tr style="background-color: #f0fff4;"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                    <tr style="${state.owner === 'SINGLE' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
+                    <tr style="${state.owner === 'COLOR_MONOPOLY' ? 'background-color: #d4edda; font-weight: bold;' : ''}"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
                 </tbody>
             </table>
         `;
@@ -1628,7 +1740,24 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
 
-// レスポンシブに応じたグラフ描画振り分け
+// 所有状態・建設数の変更イベントハンドラ
+function updatePropertyState(id, key, val) {
+    propertyGameState[id][key] = val;
+
+    // 家が建った場合は自動的にカラーモノポリーにする
+    if (key === 'houses' && parseInt(val) > 0) {
+        propertyGameState[id].owner = 'COLOR_MONOPOLY';
+    }
+
+    // 所有が未所有に戻った場合は家を0にする
+    if (key === 'owner' && val === 'UNOWNED') {
+        propertyGameState[id].houses = 0;
+    }
+
+    updateUI();
+}
+
+// UI全体の更新処理
 function updateUI() {
     let pct = ((currentTurns / targetTurns) * 100).toFixed(1);
     document.getElementById("progressBar").style.width = pct + "%";
@@ -1646,6 +1775,7 @@ function updateUI() {
         displayList.sort((a, b) => b.prob - a.prob);
     }
 
+    // 1. メインの接触確率データテーブル描画
     let tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
 
@@ -1665,6 +1795,56 @@ function updateUI() {
         `;
         tbody.appendChild(tr);
     });
+
+    // 2. 最下部：プレイ中の物件状況（GameState）テーブル描画
+    let gsTbody = document.getElementById("gameStateTableBody");
+    if (gsTbody) {
+        gsTbody.innerHTML = "";
+        boardMeta.forEach(item => {
+            let tr = document.createElement("tr");
+            let state = propertyGameState[item.id];
+            let prob = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
+            let rent = getCurrentRent(item.id);
+            let expectedIncome = (rent * prob).toFixed(2);
+
+            let ownerSelectHTML = `-`;
+            let houseSelectHTML = `-`;
+
+            if (["PROPERTY", "RAILROAD", "UTILITY"].includes(item.type)) {
+                ownerSelectHTML = `
+                    <select class="state-select" onchange="updatePropertyState(${item.id}, 'owner', this.value)">
+                        <option value="UNOWNED" ${state.owner === 'UNOWNED' ? 'selected' : ''}>未所有</option>
+                        <option value="SINGLE" ${state.owner === 'SINGLE' ? 'selected' : ''}>単独所有</option>
+                        <option value="COLOR_MONOPOLY" ${state.owner === 'COLOR_MONOPOLY' ? 'selected' : ''}>グループ独占</option>
+                    </select>
+                `;
+            }
+
+            if (item.type === "PROPERTY") {
+                houseSelectHTML = `
+                    <select class="state-select" onchange="updatePropertyState(${item.id}, 'houses', parseInt(this.value))">
+                        <option value="0" ${state.houses === 0 ? 'selected' : ''}>更地</option>
+                        <option value="1" ${state.houses === 1 ? 'selected' : ''}>家 1 軒</option>
+                        <option value="2" ${state.houses === 2 ? 'selected' : ''}>家 2 軒</option>
+                        <option value="3" ${state.houses === 3 ? 'selected' : ''}>家 3 軒</option>
+                        <option value="4" ${state.houses === 4 ? 'selected' : ''}>家 4 軒</option>
+                        <option value="5" ${state.houses === 5 ? 'selected' : ''}>ホテル</option>
+                    </select>
+                `;
+            }
+
+            tr.innerHTML = `
+                <td><strong>${item.id}</strong></td>
+                <td><strong>${item.jp}</strong></td>
+                <td><span class="badge ${item.badge}">${item.group}</span></td>
+                <td>${ownerSelectHTML}</td>
+                <td>${houseSelectHTML}</td>
+                <td><strong>$${rent}</strong></td>
+                <td><strong style="color: ${rent > 0 ? '#27ae60' : '#888'}; font-size: 13px;">$${expectedIncome} / ターン</strong></td>
+            `;
+            gsTbody.appendChild(tr);
+        });
+    }
 
     const isMobile = window.innerWidth <= 768;
     const singleWrapper = document.getElementById("singleChartWrapper");
