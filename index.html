@@ -47,7 +47,7 @@
             display: block;
         }
 
-        /* --- 1. 条件設定画面（復元） --- */
+        /* --- 1. 条件設定画面 --- */
         .config-card {
             max-width: 600px;
             margin: 0 auto;
@@ -581,11 +581,25 @@
 <div class="container">
     <h1>モノポリー（US版）確率シミュレーター</h1>
 
-    <!-- 1. 条件設定画面（復元済み） -->
+    <!-- 1. 条件設定画面（プレイ人数設定付き） -->
     <div id="configScreen" class="screen active">
         <div class="config-card">
             <h2 style="margin-top: 0; font-size: 18px; color: #333;">シミュレーション条件の設定</h2>
             
+            <div class="form-group">
+                <label for="playerCount">プレイ人数 (自分 ＋ 敵):</label>
+                <select id="playerCount">
+                    <option value="2">2 人プレイ (自分 vs 敵1人)</option>
+                    <option value="3">3 人プレイ (自分 vs 敵2人)</option>
+                    <option value="4" selected>4 人プレイ (標準・自分 vs 敵3人)</option>
+                    <option value="5">5 人プレイ (自分 vs 敵4人)</option>
+                    <option value="6">6 人プレイ (自分 vs 敵5人)</option>
+                    <option value="7">7 人プレイ (自分 vs 敵6人)</option>
+                    <option value="8">8 人プレイ (自分 vs 敵7人)</option>
+                </select>
+                <div class="form-help">他プレイヤーとの金銭移動（チャンス「取締役会長」や共同基金「オペラ/誕生日」など）の算出に影響します。</div>
+            </div>
+
             <div class="form-group">
                 <label for="jailStrategy">刑務所（Jail）戦略:</label>
                 <select id="jailStrategy">
@@ -667,7 +681,7 @@
             </table>
         </div>
 
-        <!-- サイコロ2個振った時の確率偏差・理論値表 -->
+        <!-- サイコロ2個振った時の確率偏差・理論値表（文面完全復元済み） -->
         <div class="dice-section">
             <div class="dice-section-title">🎲 2個のサイコロを振った時の出目・確率分布（理論値）</div>
             <div class="dice-table-container">
@@ -703,9 +717,11 @@
                 </table>
             </div>
 
+            <!-- 要求①: 元の文面（(1/6)³ = 1/216 (約0.46%)）に完全復元 -->
             <div class="dice-note-box">
                 <strong>💡 モノポリーにおけるゾロ目（ダブルス）の確率:</strong><br>
-                任意のゾロ目が出る確率は <strong>6/36 ＝ 1/6 (約16.67%)</strong> です。3回連続で出ると刑務所送りになります。
+                任意のゾロ目（1-1, 2-2, ..., 6-6）が出る確率は <strong>6/36 ＝ 1/6 (約16.67%)</strong> です。<br>
+                3回連続でゾロ目が出る確率は <strong>(1/6)³ ＝ 1/216 (約0.46%)</strong> となり、出た瞬間に「刑務所送り」となります。
             </div>
         </div>
 
@@ -714,7 +730,7 @@
             <div class="game-state-header">
                 <div>
                     <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
-                    <div class="game-state-subtitle">※4人プレイ（自分＋敵3人）想定。所有者（自分/敵）や建設状況を選ぶと、敵所有時のマイナス（赤字）や特殊マス（GO/税金/カード）を含めた1ターン期待収支が自動算出されます。</div>
+                    <div class="game-state-subtitle" id="gameStateSubtitle">※所有者（自分/敵）や建設状況を選ぶと、敵所有時のマイナス（赤字）や特殊マス（GO/税金/カード）を含めた1ターン期待収支が自動算出されます。</div>
                 </div>
             </div>
 
@@ -756,7 +772,7 @@ const boardMeta = [
     { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [2, 10, 30, 90, 160, 250] },
     { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "COMMUNITY", baseCashEffect: 30.3125, desc: "4人プレイ時の止まった際の平均獲得金は約 +$30.31 です。" },
+      type: "COMMUNITY" },
     { id: 3,  jp: "バルティック通り", en: "Baltic Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [4, 20, 60, 180, 320, 450] },
     { id: 4,  jp: "所得税", en: "Income Tax", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -766,7 +782,7 @@ const boardMeta = [
     { id: 6,  jp: "オリエンタル通り", en: "Oriental Ave", group: "ライトブルー", badge: "bg-light-blue", pinClass: "pin-light-blue",
       type: "PROPERTY", cost: 100, houseCost: 50, mortgage: 50, rent: [6, 30, 90, 270, 400, 550] },
     { id: 7,  jp: "チャンス 1", en: "Chance 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "CHANCE", baseCashEffect: 12.1875, desc: "4人プレイ時の止まった際の平均獲得金は約 +$12.19 です。" },
+      type: "CHANCE" },
     { id: 8,  jp: "バーモント通り", en: "Vermont Ave", group: "ライトブルー", badge: "bg-light-blue", pinClass: "pin-light-blue",
       type: "PROPERTY", cost: 100, houseCost: 50, mortgage: 50, rent: [6, 30, 90, 270, 400, 550] },
     { id: 9,  jp: "コネチカット通り", en: "Connecticut Ave", group: "ライトブルー", badge: "bg-light-blue", pinClass: "pin-light-blue",
@@ -786,7 +802,7 @@ const boardMeta = [
     { id: 16, jp: "セント・ジェームス・プレイス", en: "St. James Place", group: "オレンジ", badge: "bg-orange", pinClass: "pin-orange",
       type: "PROPERTY", cost: 180, houseCost: 100, mortgage: 90, rent: [14, 70, 200, 550, 750, 950] },
     { id: 17, jp: "共同基金 2", en: "Community Chest 2", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "COMMUNITY", baseCashEffect: 30.3125, desc: "4人プレイ時の止まった際の平均獲得金は約 +$30.31 です。" },
+      type: "COMMUNITY" },
     { id: 18, jp: "テネシー通り", en: "Tennessee Ave", group: "オレンジ", badge: "bg-orange", pinClass: "pin-orange",
       type: "PROPERTY", cost: 180, houseCost: 100, mortgage: 90, rent: [14, 70, 200, 550, 750, 950] },
     { id: 19, jp: "ニューヨーク通り", en: "New York Ave", group: "オレンジ", badge: "bg-orange", pinClass: "pin-orange",
@@ -796,7 +812,7 @@ const boardMeta = [
     { id: 21, jp: "ケンタッキー通り", en: "Kentucky Ave", group: "レッド", badge: "bg-red", pinClass: "pin-red",
       type: "PROPERTY", cost: 220, houseCost: 150, mortgage: 110, rent: [18, 90, 250, 700, 875, 1050] },
     { id: 22, jp: "チャンス 2", en: "Chance 2", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "CHANCE", baseCashEffect: 12.1875, desc: "4人プレイ時の止まった際の平均獲得金は約 +$12.19 です。" },
+      type: "CHANCE" },
     { id: 23, jp: "インディアナ通り", en: "Indiana Ave", group: "レッド", badge: "bg-red", pinClass: "pin-red",
       type: "PROPERTY", cost: 220, houseCost: 150, mortgage: 110, rent: [18, 90, 250, 700, 875, 1050] },
     { id: 24, jp: "イリノイ通り", en: "Illinois Ave", group: "レッド", badge: "bg-red", pinClass: "pin-red",
@@ -818,13 +834,13 @@ const boardMeta = [
     { id: 32, jp: "ノースカロライナ通り", en: "North Carolina Ave", group: "グリーン", badge: "bg-green", pinClass: "pin-green",
       type: "PROPERTY", cost: 300, houseCost: 200, mortgage: 150, rent: [26, 130, 390, 900, 1100, 1275] },
     { id: 33, jp: "共同基金 3", en: "Community Chest 3", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "COMMUNITY", baseCashEffect: 30.3125, desc: "4人プレイ時の止まった際の平均獲得金は約 +$30.31 です。" },
+      type: "COMMUNITY" },
     { id: 34, jp: "ペンシルバニア通り", en: "Pennsylvania Ave", group: "グリーン", badge: "bg-green", pinClass: "pin-green",
       type: "PROPERTY", cost: 320, houseCost: 200, mortgage: 160, rent: [28, 150, 450, 1000, 1200, 1400] },
     { id: 35, jp: "ショートライン鉄道", en: "Short Line RR", group: "鉄道", badge: "bg-railroad", pinClass: "pin-railroad",
       type: "RAILROAD", cost: 200, mortgage: 100 },
     { id: 36, jp: "チャンス 3", en: "Chance 3", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "CHANCE", baseCashEffect: 12.1875, desc: "4人プレイ時の止まった際の平均獲得金は約 +$12.19 です。" },
+      type: "CHANCE" },
     { id: 37, jp: "パーク・プレイス", en: "Park Place", group: "ダークブルー", badge: "bg-dark-blue", pinClass: "pin-dark-blue",
       type: "PROPERTY", cost: 350, houseCost: 200, mortgage: 175, rent: [35, 175, 500, 1100, 1300, 1500] },
     { id: 38, jp: "贅沢税", en: "Luxury Tax", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -846,6 +862,7 @@ let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 let currentTurns = 0;
 let targetTurns = 1000000;
 let selectedStrategy = "EARLY_EXIT";
+let playerCount = 4; // デフォルト4人
 let isRunning = false;
 let animFrameId = null;
 let isSortedByProb = false;
@@ -1018,6 +1035,7 @@ function renderBoardPins() {
 }
 
 function startSimulation() {
+    playerCount = parseInt(document.getElementById("playerCount").value);
     selectedStrategy = document.getElementById("jailStrategy").value;
     targetTurns = parseInt(document.getElementById("totalTurns").value);
 
@@ -1034,7 +1052,8 @@ function startSimulation() {
 
     let stratText = selectedStrategy === "EARLY_EXIT" ? "即時脱出" : "ゾロ目狙い";
     let modeText = targetTurns === 300 ? "300 ターン (1試合想定)" : `${targetTurns.toLocaleString()} ターン`;
-    document.getElementById("configSummary").innerText = `条件: 【${stratText}】 / モード: 【${modeText}】`;
+    document.getElementById("configSummary").innerText = `条件: 【${playerCount}人プレイ】 / 【${stratText}】 / モード: 【${modeText}】`;
+    document.getElementById("gameStateSubtitle").innerText = `※${playerCount}人プレイ（自分＋敵${playerCount - 1}人）想定。所有者や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。`;
 
     renderBoardPins();
     isRunning = true;
@@ -1054,11 +1073,25 @@ function toggleSort() {
     updateUI();
 }
 
+// 要求②: プレイ人数（playerCount）に応じたカード平均収支動的算出
 function getBaseCashValue(id) {
     let item = boardMeta[id];
     let state = propertyGameState[id];
 
+    // 特殊マス（チャンス・共同基金・GO・税金）の動的金額算出
+    if (item.type === "CHANCE") {
+        let opponents = playerCount - 1;
+        let totalVal = 200 + 150 + 10 - 15 - (50 * opponents); // 取締役会長: 各敵人へ $50 支払い
+        return totalVal / 16;
+    }
+    if (item.type === "COMMUNITY") {
+        let opponents = playerCount - 1;
+        let totalVal = 200 + 100 + 100 + 50 + 25 + 20 + 10 - 100 - 50 - 50 + (50 * opponents) + (10 * opponents); // オペラ+$50/人, 誕生日+$10/人
+        return totalVal / 16;
+    }
     if (item.baseCashEffect !== undefined) return item.baseCashEffect;
+
+    // 通常物件マス
     if (state.ownerType === "NONE") return 0;
 
     if (item.type === "PROPERTY") {
@@ -1132,7 +1165,6 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-// ④グループ独占以外の時に家建設を制限
 function updatePropertyState(id, key, val) {
     propertyGameState[id][key] = val;
 
@@ -1192,12 +1224,11 @@ function updateUI() {
             let prob = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
             let baseCash = getBaseCashValue(item.id);
 
-            let isSpecialEffect = item.baseCashEffect !== undefined;
+            let isSpecialEffect = item.baseCashEffect !== undefined || ["CHANCE", "COMMUNITY"].includes(item.type);
             let ownerTypeHTML = `-`;
             let monopolyTypeHTML = `-`;
             let houseSelectHTML = `-`;
 
-            // ①所有者の選択（未所有/自分/敵）
             if (["PROPERTY", "RAILROAD", "UTILITY"].includes(item.type)) {
                 ownerTypeHTML = `
                     <select class="state-select" onchange="updatePropertyState(${item.id}, 'ownerType', this.value)">
@@ -1215,7 +1246,6 @@ function updateUI() {
                 `;
             }
 
-            // ④グループ独占時のみ家建設が可能（disabled制御）
             if (item.type === "PROPERTY") {
                 let isHouseDisabled = state.ownerType === 'NONE' || state.monopolyType !== 'COLOR_MONOPOLY';
                 houseSelectHTML = `
@@ -1230,9 +1260,8 @@ function updateUI() {
                 `;
             }
 
-            // ③1ターンあたりの期待収支計算
             let calcExpected = baseCash * prob;
-            let displaySingleAmount = `$${Math.abs(baseCash).toFixed(0)}`;
+            let displaySingleAmount = `$${Math.abs(baseCash).toFixed(baseCash % 1 !== 0 ? 1 : 0)}`;
             let displayExpectedText = "";
             let incomeClass = "income-zero";
 
@@ -1251,7 +1280,6 @@ function updateUI() {
                     displayExpectedText = `+$${calcExpected.toFixed(2)} / ターン`;
                     incomeClass = "income-positive";
                 } else if (state.ownerType === "ENEMY") {
-                    // ②敵所有時のマイナス・赤字表示
                     displayExpectedText = `-$${calcExpected.toFixed(2)} / ターン`;
                     incomeClass = "income-negative";
                 } else {
