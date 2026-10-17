@@ -188,6 +188,7 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
         .bg-bonus { background-color: #27ae60; }
+        .bg-jail-fee { background-color: #e74c3c; }
 
         .dice-section {
             margin-top: 60px; padding: 24px; background: #f8f9fa;
@@ -221,6 +222,34 @@
         .game-state-header { margin-bottom: 16px; }
         .game-state-title { font-size: 18px; font-weight: bold; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
         .game-state-subtitle { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.5; }
+
+        .toggle-panel {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .toggle-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
 
         .state-select { padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
         .state-select:disabled { background: #f1f3f5; color: #aaa; cursor: not-allowed; }
@@ -472,9 +501,19 @@
                 <div>
                     <div class="game-state-title">🏠 プレイ中の「現在の物件状況」マネージャー</div>
                     <div class="game-state-subtitle" id="gameStateSubtitle">
-                        ※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。<br>
-                        <strong style="color: #27ae60;">【計算仕様】</strong> サイコロやカードによる周回ボーナスは別枠としてカウントされています。
+                        ※所有者（自分/敵）や建設状況を選ぶと、敵所有時の赤字や特殊マスの1ターン期待収支が自動算出されます。
                     </div>
+                </div>
+
+                <div class="toggle-panel">
+                    <label class="toggle-item">
+                        <input type="checkbox" id="includeGoBonusToggle" checked onchange="updateUI()">
+                        ✨ 周回ボーナス ($200) を収支計算に含める
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="includeJailFeeToggle" checked onchange="updateUI()">
+                        🔒 刑務所脱出費用 ($50) を収支計算に含める
+                    </label>
                 </div>
             </div>
 
@@ -566,7 +605,7 @@ const communityCardsInfo = [
 
 const boardMeta = [
     { id: 0,  jp: "スタート (GO)", en: "GO", group: "特殊", badge: "bg-special", pinClass: "pin-special",
-      type: "SPECIAL", baseCashEffect: 0, desc: "通過・到着時に給料 $200 を獲得します。※サイコロやカードによる周回ボーナスは別枠としてカウントされています。" },
+      type: "SPECIAL", baseCashEffect: 0, desc: "通過・到着時に給料 $200 を獲得します。※周回ボーナスや刑務所費用は設定トグルで算出のオン/オフが変更可能です。" },
     { id: 1,  jp: "メディテラニアン通り", en: "Mediterranean Ave", group: "ブラウン", badge: "bg-brown", pinClass: "pin-brown",
       type: "PROPERTY", cost: 60, houseCost: 50, mortgage: 30, rent: [2, 10, 30, 90, 160, 250] },
     { id: 2,  jp: "共同基金 1", en: "Community Chest 1", group: "特殊", badge: "bg-special", pinClass: "pin-special",
@@ -659,6 +698,7 @@ let visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 let earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
 
 let goSalaryCount = 0;
+let jailFeePayCount = 0;
 
 let currentTurns = 0;
 let targetTurns = 1000000;
@@ -772,11 +812,13 @@ function stepTurn() {
         } else {
             if (selectedStrategy === "EARLY_EXIT") {
                 inJail = false; jailTurns = 0;
+                jailFeePayCount++;
                 if (pos + moveDice >= 40) goSalaryCount++;
                 pos = (pos + moveDice) % 40; resolveLanding(pos);
             } else {
                 if (jailTurns === 2) {
                     inJail = false; jailTurns = 0;
+                    jailFeePayCount++;
                     if (pos + moveDice >= 40) goSalaryCount++;
                     pos = (pos + moveDice) % 40; resolveLanding(pos);
                 } else { jailTurns++; visitCounts[10]++; }
@@ -863,6 +905,7 @@ function startSimulation() {
     visitHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
     earlyHistory = Array.from({ length: 40 }, () => new Array(10).fill(0));
     goSalaryCount = 0;
+    jailFeePayCount = 0;
     currentTurns = 0; pos = 0; doubleCount = 0; inJail = false; jailTurns = 0;
     isSortedByProb = false;
     document.getElementById("sortBtn").innerText = "着地確率が高い順に並び替え";
@@ -1159,6 +1202,7 @@ function closeModal() { document.getElementById("detailModal").classList.remove(
 function closeModalOnOverlay(e) { if (e.target.id === "detailModal") closeModal(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+// 鉄道などの所有状態更新ロジック改修
 function updatePropertyState(id, key, val) {
     const targetMeta = boardMeta[id];
     propertyGameState[id][key] = val;
@@ -1168,12 +1212,13 @@ function updatePropertyState(id, key, val) {
         propertyGameState[id].houses = 0;
         propertyGameState[id].railCount = 1;
 
-        let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
-        sameGroupMetas.forEach(m => {
-            propertyGameState[m.id].monopolyType = 'SINGLE';
-            propertyGameState[m.id].houses = 0;
-            if (m.type === "RAILROAD") propertyGameState[m.id].railCount = 1;
-        });
+        if (targetMeta.type !== "RAILROAD") {
+            let sameGroupMetas = boardMeta.filter(m => m.group === targetMeta.group);
+            sameGroupMetas.forEach(m => {
+                propertyGameState[m.id].monopolyType = 'SINGLE';
+                propertyGameState[m.id].houses = 0;
+            });
+        }
     }
 
     if (key === 'monopolyType') {
@@ -1192,19 +1237,20 @@ function updatePropertyState(id, key, val) {
         }
     }
 
+    // 鉄道（1〜4駅）選択時のリンク改修
     if (key === 'railCount') {
         let railMetas = boardMeta.filter(m => m.type === "RAILROAD");
         let currentOwner = propertyGameState[id].ownerType;
 
         if (val === 4) {
+            // 「4駅独占」選択時のみ全鉄道を一括同期
             railMetas.forEach(m => {
                 propertyGameState[m.id].ownerType = currentOwner;
                 propertyGameState[m.id].railCount = 4;
             });
         } else {
-            railMetas.forEach(m => {
-                propertyGameState[m.id].railCount = val;
-            });
+            // 1, 2, 3駅所有選択時（独占解除時）は他駅をリンクさせず、選択した駅のみ更新
+            propertyGameState[id].railCount = val;
         }
     }
 
@@ -1250,15 +1296,26 @@ function updateUI() {
     let totalHousesUsed = 0;
     let totalHotelsUsed = 0;
 
+    let includeGo = document.getElementById("includeGoBonusToggle")?.checked ?? true;
+    let includeJail = document.getElementById("includeJailFeeToggle")?.checked ?? true;
+
     let goSalaryExpected = currentTurns > 0 ? ((goSalaryCount * 200) / currentTurns) : 0;
-    totalNetExpected += goSalaryExpected;
+    let jailFeeExpected = currentTurns > 0 ? ((jailFeePayCount * 50) / currentTurns) : 0;
+
+    if (includeGo) {
+        totalNetExpected += goSalaryExpected;
+    }
+    if (includeJail) {
+        totalNetExpected -= jailFeeExpected;
+    }
 
     let gsTbody = document.getElementById("gameStateTableBody");
     if (gsTbody) {
         gsTbody.innerHTML = "";
 
         let bonusTr = document.createElement("tr");
-        bonusTr.style.backgroundColor = "#f0fff4";
+        bonusTr.style.backgroundColor = includeGo ? "#f0fff4" : "#f8f9fa";
+        bonusTr.style.opacity = includeGo ? "1" : "0.5";
         bonusTr.innerHTML = `
             <td><strong style="color: #27ae60;">-</strong></td>
             <td><strong style="color: #27ae60;">✨ 周回ボーナス (GO給与)</strong></td>
@@ -1267,9 +1324,29 @@ function updateUI() {
             <td><span style="color: #888;">通過・ワープ時手当</span></td>
             <td><span style="color: #888;">-</span></td>
             <td><strong>+$200</strong></td>
-            <td><strong class="income-positive">+$${goSalaryExpected.toFixed(2)} / ターン</strong></td>
+            <td><strong class="${includeGo ? 'income-positive' : 'income-zero'}">+$${goSalaryExpected.toFixed(2)} / ターン ${includeGo ? '' : '(除外中)'}</strong></td>
         `;
         gsTbody.appendChild(bonusTr);
+
+        let jailFeeTr = document.createElement("tr");
+        jailFeeTr.style.backgroundColor = includeJail ? "#fff5f5" : "#f8f9fa";
+        jailFeeTr.style.opacity = includeJail ? "1" : "0.5";
+        jailFeeTr.innerHTML = `
+            <td><strong style="color: #e74c3c;">-</strong></td>
+            <td>
+                <strong style="color: #e74c3c;">🔒 刑務所脱出費用 ($50)</strong>
+                <div style="font-size: 11px; color: #888; font-weight: normal; margin-top: 2px;">
+                    ※釈放カード（Get Out of Jail Free）による無料脱出は計算から除外されています（サイコロのゾロ目脱出および脱出費用の支払いを基に算出）。
+                </div>
+            </td>
+            <td><span class="badge bg-jail-fee">脱出手当</span></td>
+            <td><span style="color: #888;">全員共通</span></td>
+            <td><span style="color: #888;">釈放支払い手当</span></td>
+            <td><span style="color: #888;">-</span></td>
+            <td><strong>-$50</strong></td>
+            <td><strong class="${includeJail ? 'income-negative' : 'income-zero'}">-$${jailFeeExpected.toFixed(2)} / ターン ${includeJail ? '' : '(除外中)'}</strong></td>
+        `;
+        gsTbody.appendChild(jailFeeTr);
 
         boardMeta.forEach(item => {
             let tr = document.createElement("tr");
