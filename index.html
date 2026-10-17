@@ -311,7 +311,7 @@
             border-collapse: collapse;
             font-size: 13px;
             text-align: left;
-            min-width: 650px;
+            min-width: 500px;
         }
 
         th, td {
@@ -363,7 +363,7 @@
         .bg-utility { background-color: #708090; }
         .bg-special { background-color: #888; }
 
-        /* --- サイコロ確率セクション（最下部・余白を60pxに拡大） --- */
+        /* --- サイコロ確率セクション（最下部・十分な余白） --- */
         .dice-section {
             margin-top: 60px;
             padding: 24px;
@@ -462,7 +462,7 @@
         .modal-card {
             background: #fff;
             width: 92%;
-            max-width: 620px;
+            max-width: 650px;
             max-height: 88vh;
             border-radius: 10px;
             padding: 20px;
@@ -502,6 +502,7 @@
 
         .detail-table th {
             background: #f1f3f5;
+            text-align: left;
         }
 
         .card-list {
@@ -730,30 +731,28 @@
 
         <!-- テーブルツールバー -->
         <div class="table-toolbar">
-            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると詳細情報と推移を表示）</small></div>
+            <div class="table-title">全40マス 着地・接触データ一覧 <small style="font-size: 12px; font-weight: normal; color: #666; display: block;">（行をクリックすると各開発状態の家賃と1ターンあたり期待収入を表示）</small></div>
             <button class="btn-sort" id="sortBtn" onclick="toggleSort()">着地確率が高い順に並び替え</button>
         </div>
 
-        <!-- データテーブル（期待収入列を追加） -->
+        <!-- 表のデータテーブル（表面はすっきりシンプルな構成） -->
         <div class="table-box">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 45px;">ID</th>
+                        <th style="width: 50px;">ID</th>
                         <th>日本語場所名</th>
+                        <th>英語表記</th>
                         <th>グループ</th>
-                        <th>接触確率 (%)</th>
-                        <th>更地家賃 ($)</th>
-                        <th>更地 期待収入 ($/ターン)</th>
-                        <th>ホテル家賃 ($)</th>
-                        <th>ホテル 期待収入 ($/ターン)</th>
+                        <th>接触・着地回数</th>
+                        <th>1ターンあたりの接触確率 (%)</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
 
-        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部・余白拡大済み) -->
+        <!-- サイコロ2個振った時の確率偏差・理論値表 (最下部・十分な余白で配置) -->
         <div class="dice-section">
             <div class="dice-section-title">
                 🎲 2個のサイコロを振った時の出目・確率分布（理論値）
@@ -1309,61 +1308,131 @@ function switchTab(tabName) {
     }
 }
 
-// モーダルポップアップ処理
+// モーダルポップアップ処理（裏の詳細画面：各状態ごとの家賃と期待収入を全行で表示）
 function showDetail(id) {
     const item = boardMeta.find(m => m.id === id);
     if (!item) return;
+
+    let currentProb = currentTurns > 0 ? (visitCounts[item.id] / currentTurns) : 0;
+    let currentProbPct = (currentProb * 100).toFixed(3);
 
     let html = `
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
             <span class="badge ${item.badge}" style="font-size: 13px; padding: 4px 10px;">${item.group}</span>
             <h2 style="margin: 0; font-size: 20px; color: #2c3e50;">${item.jp}</h2>
         </div>
-        <p style="color: #666; margin-top: 0; font-size: 13px;"><strong>英語名:</strong> ${item.en} (マスNo. ${item.id})</p>
+        <p style="color: #666; margin-top: 0; font-size: 13px;">
+            <strong>英語名:</strong> ${item.en} (マスNo. ${item.id}) | 
+            <strong>現在の1ターンあたり着地確率:</strong> <span style="color: #3182ce; font-weight: bold;">${currentProbPct}%</span>
+        </p>
     `;
 
     if (item.type === "PROPERTY") {
+        let r = item.rent;
+        let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
+
         html += `
-            <table class="detail-table">
+            <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
                 <tr><th>家1軒の建設費</th><td>$${item.houseCost}</td></tr>
                 <tr><th>抵当受取額</th><td>$${item.mortgage} (解除費: $${Math.round(item.mortgage * 1.1)})</td></tr>
             </table>
 
-            <h4 style="margin: 16px 0 8px 0; color: #333;">家賃（レンタル料）一覧</h4>
+            <h4 style="margin: 16px 0 8px 0; color: #333;">開発状態ごとの家賃と1ターンあたり期待収入</h4>
             <table class="detail-table">
-                <tr><th>更地 (基本家賃)</th><td>$${item.rent[0]} <small>(モノポリー時: $${item.rent[0] * 2})</small></td></tr>
-                <tr><th>家 1 軒</th><td>$${item.rent[1]}</td></tr>
-                <tr><th>家 2 軒</th><td>$${item.rent[2]}</td></tr>
-                <tr><th>家 3 軒</th><td>$${item.rent[3]}</td></tr>
-                <tr><th>家 4 軒</th><td>$${item.rent[4]}</td></tr>
-                <tr><th>ホテル</th><td><strong>$${item.rent[5]}</strong></td></tr>
+                <thead>
+                    <tr>
+                        <th>所有・建設状態</th>
+                        <th style="width: 100px;">家賃 ($)</th>
+                        <th style="width: 170px;">1ターンあたり期待収入</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>更地 (基本家賃)</td>
+                        <td>$${r[0]}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[0])} / ターン</strong></td>
+                    </tr>
+                    <tr>
+                        <td>更地 (カラーグループ独占)</td>
+                        <td>$${r[0] * 2}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[0] * 2)} / ターン</strong></td>
+                    </tr>
+                    <tr>
+                        <td>家 1 軒</td>
+                        <td>$${r[1]}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[1])} / ターン</strong></td>
+                    </tr>
+                    <tr>
+                        <td>家 2 軒</td>
+                        <td>$${r[2]}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[2])} / ターン</strong></td>
+                    </tr>
+                    <tr>
+                        <td>家 3 軒</td>
+                        <td>$${r[3]}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[3])} / ターン</strong></td>
+                    </tr>
+                    <tr>
+                        <td>家 4 軒</td>
+                        <td>$${r[4]}</td>
+                        <td><strong style="color: #2b6cb0;">$${calcExp(r[4])} / ターン</strong></td>
+                    </tr>
+                    <tr style="background-color: #f0fff4;">
+                        <td><strong>ホテル</strong></td>
+                        <td><strong>$${r[5]}</strong></td>
+                        <td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(r[5])} / ターン</strong></td>
+                    </tr>
+                </tbody>
             </table>
         `;
     } else if (item.type === "RAILROAD") {
+        let calcExp = (rentVal) => (rentVal * currentProb).toFixed(2);
         html += `
-            <table class="detail-table">
+            <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
                 <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
             </table>
-            <h4 style="margin: 16px 0 8px 0; color: #333;">鉄道の所有数別家賃</h4>
+
+            <h4 style="margin: 16px 0 8px 0; color: #333;">鉄道の所有数別家賃と1ターンあたり期待収入</h4>
             <table class="detail-table">
-                <tr><th>1駅所有</th><td>$25</td></tr>
-                <tr><th>2駅所有</th><td>$50</td></tr>
-                <tr><th>3駅所有</th><td>$100</td></tr>
-                <tr><th>4駅独占</th><td><strong>$200</strong></td></tr>
+                <thead>
+                    <tr>
+                        <th>所有数</th>
+                        <th>家賃 ($)</th>
+                        <th>1ターンあたり期待収入</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1 駅所有</td><td>$25</td><td><strong style="color: #2b6cb0;">$${calcExp(25)} / ターン</strong></td></tr>
+                    <tr><td>2 駅所有</td><td>$50</td><td><strong style="color: #2b6cb0;">$${calcExp(50)} / ターン</strong></td></tr>
+                    <tr><td>3 駅所有</td><td>$100</td><td><strong style="color: #2b6cb0;">$${calcExp(100)} / ターン</strong></td></tr>
+                    <tr style="background-color: #f0fff4;"><td><strong>4 駅独占</strong></td><td><strong>$200</strong></td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(200)} / ターン</strong></td></tr>
+                </tbody>
             </table>
         `;
     } else if (item.type === "UTILITY") {
+        // ダイス合計平均 7 で計算した例
+        let calcExp = (multiplier) => (multiplier * 7 * currentProb).toFixed(2);
         html += `
-            <table class="detail-table">
+            <table class="detail-table" style="margin-bottom: 16px;">
                 <tr><th>買収費用</th><td><strong>$${item.cost}</strong></td></tr>
                 <tr><th>抵当受取額</th><td>$${item.mortgage}</td></tr>
             </table>
-            <h4 style="margin: 16px 0 8px 0; color: #333;">公共事業の所有数別家賃</h4>
+
+            <h4 style="margin: 16px 0 8px 0; color: #333;">公共事業の所有数別家賃と平均期待収入 (ダイス目平均 7 想定)</h4>
             <table class="detail-table">
-                <tr><th>1社所有</th><td>ダイスの目合計 &times; <strong>4倍</strong></td></tr>
-                <tr><th>2社両方所有</th><td>ダイスの目合計 &times; <strong>10倍</strong></td></tr>
+                <thead>
+                    <tr>
+                        <th>所有数</th>
+                        <th>家賃ルール</th>
+                        <th>1ターンあたり期待収入 (平均)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1 社所有</td><td>出目 &times; 4倍 (平均 $28)</td><td><strong style="color: #2b6cb0;">$${calcExp(4)} / ターン</strong></td></tr>
+                    <tr style="background-color: #f0fff4;"><td><strong>2 社両方所有</strong></td><td>出目 &times; 10倍 (平均 $70)</td><td><strong style="color: #27ae60; font-size: 14px;">$${calcExp(10)} / ターン</strong></td></tr>
+                </tbody>
             </table>
         `;
     } else if (item.type === "CHANCE") {
@@ -1568,15 +1637,7 @@ function updateUI() {
     let displayList = boardMeta.map((meta, idx) => {
         let count = visitCounts[idx];
         let prob = currentTurns > 0 ? (count / currentTurns * 100) : 0;
-        
-        // 期待収入計算
-        let baseRent = meta.type === "PROPERTY" ? meta.rent[0] : 0;
-        let hotelRent = meta.type === "PROPERTY" ? meta.rent[5] : 0;
-        
-        let baseExpected = (baseRent * (prob / 100)).toFixed(2);
-        let hotelExpected = (hotelRent * (prob / 100)).toFixed(2);
-
-        return { ...meta, count, prob, baseRent, hotelRent, baseExpected, hotelExpected };
+        return { ...meta, count, prob };
     });
 
     let maxProb = Math.max(...displayList.map(d => d.prob));
@@ -1594,20 +1655,13 @@ function updateUI() {
         if (item.id === 10) tr.classList.add("jail-row");
         tr.onclick = () => showDetail(item.id);
 
-        let baseRentText = item.type === "PROPERTY" ? `$${item.baseRent}` : "-";
-        let hotelRentText = item.type === "PROPERTY" ? `$${item.hotelRent}` : "-";
-        let baseExpText = item.type === "PROPERTY" ? `$${item.baseExpected}` : "-";
-        let hotelExpText = item.type === "PROPERTY" ? `$${item.hotelExpected}` : "-";
-
         tr.innerHTML = `
             <td><strong>${item.id}</strong></td>
             <td><strong>${item.jp}</strong></td>
+            <td style="color: #666;">${item.en}</td>
             <td><span class="badge ${item.badge}">${item.group}</span></td>
+            <td>${item.count.toLocaleString()}</td>
             <td><strong>${item.prob.toFixed(3)}%</strong></td>
-            <td>${baseRentText}</td>
-            <td style="color: #2b6cb0;"><strong>${baseExpText}</strong></td>
-            <td>${hotelRentText}</td>
-            <td style="color: #27ae60;"><strong>${hotelExpText}</strong></td>
         `;
         tbody.appendChild(tr);
     });
